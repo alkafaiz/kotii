@@ -1,146 +1,48 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  InputAdornment,
-  FormControl,
-  InputLabel,
-  Input,
-  IconButton
-} from "@material-ui/core";
-import Visibility from "@material-ui/icons/Visibility";
-import VisibilityOff from "@material-ui/icons/VisibilityOff";
-import Photo from "../../assets/img/img-login.jpg";
+import { Box, Typography, IconButton, Container } from "@material-ui/core";
+import DashboardIcon from "@material-ui/icons/Dashboard";
+import Moment from "../Moment";
+import MomentCreator from "../Form";
 
 const style = theme => ({
-  wrapper: {
-    display: "grid",
-    gridTemplateColumns: "1fr 2fr",
-    width: "100%",
-    height: "100vh",
-    [theme.breakpoints.only("xs")]: {
-      gridTemplateColumns: "1fr"
-    }
-  },
-  content: {
-    padding: theme.spacing(6),
-    paddingLeft: theme.spacing(12),
-    paddingRight: theme.spacing(12),
-    display: "flex",
-    flexFlow: "column wrap",
-    justifyContent: "space-between",
-    [theme.breakpoints.only("xs")]: {
-      padding: theme.spacing(2)
-    }
-  },
   logo: {
     fontFamily: "Palanquin Dark"
   },
-  photo: {
-    backgroundImage: `url(${Photo})`,
-    backgroundSize: "cover",
-    height: "100%",
-    width: "100%",
-    [theme.breakpoints.only("xs")]: {
-      display: "none"
-    }
+  appbarWrapper: {
+    borderBottom: "1px solid",
+    minHeight: 88,
+    borderBottomColor: theme.palette.divider
   },
-  form: {
-    height: 220,
-    display: "inherit",
-    flexFlow: "inherit",
-    justifyContent: "inherit"
+  appbar: {
+    display: "flex",
+    justifyContent: "space-between",
+    // paddingTop: theme.spacing(3),
+    // paddingBottom: theme.spacing(3),
+    // paddingLeft: theme.spacing(6),
+    // paddingRight: theme.spacing(6),
+    alignItems: "center"
   },
-  btn: {
-    backgroundColor: "black",
-    color: "white",
-    borderRadius: 35,
-    width: 130
+  btnDashboard: {
+    color: theme.palette.common.black
+  },
+  momentWrapper: {
+    paddingTop: theme.spacing(7)
   }
 });
 
 const useStyle = makeStyles(style);
 
-export default function Login() {
-  const [values, setValues] = React.useState({
-    amount: "",
-    password: "",
-    weight: "",
-    weightRange: "",
-    showPassword: false
-  });
-
+export default function Main() {
   const classes = useStyle();
-
-  const handleChange = prop => event => {
-    setValues({ ...values, [prop]: event.target.value });
-  };
-
-  const handleClickShowPassword = () => {
-    setValues({ ...values, showPassword: !values.showPassword });
-  };
-
-  const handleMouseDownPassword = event => {
-    event.preventDefault();
-  };
-
   return (
-    <Box className={classes.wrapper}>
-      <Box className={classes.content}>
-        <Box>
-          <Typography className={classes.logo} variant="h3">
+    <React.Fragment>
+      <Box className={classes.appbarWrapper}>
+        <Container className={classes.appbar}>
+          <Typography className={classes.logo} variant="h4">
             :kotii
           </Typography>
-          <Typography className={classes.subTitle} variant="subtitle1">
-            Start your story now
-          </Typography>
-        </Box>
-        <Box className={classes.form}>
-          <Typography className={classes.loginTitle} variant="h6">
-            Login to your account
-          </Typography>
-          <TextField
-            label="username"
-            variant="standard"
-            type="text"
-            fullWidth
-          />
-          <FormControl>
-            <InputLabel htmlFor="standard-adornment-password">
-              Password
-            </InputLabel>
-            <Input
-              id="standard-adornment-password"
-              type={values.showPassword ? "text" : "password"}
-              value={values.password}
-              onChange={handleChange("password")}
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={handleClickShowPassword}
-                    onMouseDown={handleMouseDownPassword}
-                  >
-                    {values.showPassword ? <Visibility /> : <VisibilityOff />}
-                  </IconButton>
-                </InputAdornment>
-              }
-            />
-          </FormControl>
-          <Box mt={4}>
-            <Button
-              variant="contained"
-              className={classes.btn}
-              disableElevation
-            >
-              Login
-            </Button>
-          </Box>
-        </Box>
-        <Box>
+
           <svg
             width="87"
             height="87"
@@ -172,12 +74,40 @@ export default function Login() {
               </clipPath>
             </defs>
           </svg>
-          <Typography className={classes.footer} variant="caption">
-            *private property
-          </Typography>
-        </Box>
+          <IconButton className={classes.btnDashboard}>
+            <DashboardIcon />
+          </IconButton>
+        </Container>
       </Box>
-      <Box className={classes.photo}></Box>
-    </Box>
+      <Container className={classes.momentWrapper}>
+        <MomentCreator />
+        <Moment
+          desc="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Enim nec
+            dui nunc mattis enim ut. Quisque egestas diam in arcu cursus.
+            Blandit massa enim nec dui nunc mattis enim ut tellus. Vel turpis
+            nunc eget lorem dolor. Fames ac turpis egestas maecenas pharetra
+            convallis posuere morbi. Nisl nunc mi ipsum faucibus vitae aliquet
+            nec. Purus gravida quis blandit turpis cursus. Mus mauris vitae
+            ultricies leo. Massa tempor nec feugiat nisl pretium fusce id velit
+            ut. In cursus turpis massa tincidunt dui. Quis eleifend quam
+            adipiscing vitae proin sagittis nisl rhoncus mattis. Nibh tellus
+            molestie nunc non blandit massa enim."
+        />
+        <Moment
+          desc="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Enim nec
+            dui nunc mattis enim ut. Quisque egestas diam in arcu cursus.
+            Blandit massa enim nec dui nunc mattis enim ut tellus. Vel turpis
+            nunc eget lorem dolor. Fames ac turpis egestas maecenas pharetra
+            convallis posuere morbi. "
+        />
+        <Moment
+          desc="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Enim nec
+            dui nunc mattis enim ut. Quisque egestas diam in arcu cursus."
+        />
+      </Container>
+    </React.Fragment>
   );
 }
