@@ -3,7 +3,7 @@ const style = {
     type: "light"
   },
   typography: {
-    fontFamily: "Frank Ruhl Libre, Montserrat"
+    fontFamily: "Montserrat,Frank Ruhl Libre, "
   }
 };
 export default style;

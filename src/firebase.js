@@ -36,3 +36,46 @@ export const createMoment = data => {
       console.error("Error adding document: ", error);
     });
 };
+
+const userObj = {
+  id: 1,
+  name: "faiz",
+  googleId: "0019203",
+  email: "faiz@gmail.com"
+};
+
+const coupleObj = {
+  id: 1,
+  User1: {
+    id: 1,
+    name: "faiz"
+  },
+  moment: [{ body: "tessss", title: "haooo", date: "10 January 2012" }]
+};
+
+export const createUser = data => {
+  firebase
+    .firestore()
+    .collection("couple")
+    .add(data)
+    .then(function(docRef) {
+      console.log("Document written with ID: ", docRef.id);
+    })
+    .catch(function(error) {
+      console.error("Error adding document: ", error);
+    });
+};
+
+export const signUpGoogle = cb => {
+  var provider = new firebase.auth.GoogleAuthProvider();
+  firebase
+    .auth()
+    .signInWithPopup(provider)
+    .then(function(result) {
+      cb(result);
+      console.log(result);
+    })
+    .catch(function(error) {
+      console.log(error);
+    });
+};
