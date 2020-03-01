@@ -16,11 +16,13 @@ import classnames from "classnames";
 import {
   signInGoogle,
   signupEmailPassword,
-  getCurrentUser
+  getCurrentUser,
+  isInvCodeValid
 } from "../../firebase";
 import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
 import { useHistory } from "react-router-dom";
 import querystring from "query-string";
+import { returnStatement } from "@babel/types";
 
 const style = theme => ({
   wrapper: {
@@ -232,6 +234,7 @@ export default function Signup(props) {
     password: "",
     photoURL: ""
   });
+  const [partnerEmail, setPartnerEmail] = useState("");
 
   useEffect(() => {
     const qs = querystring.parse(props.history.location.search);
@@ -247,9 +250,7 @@ export default function Signup(props) {
   }, []);
 
   function steps() {
-    console.log(ref);
     if (!ref === "login" || ref === "") {
-      console.log("eeeeeee");
       return ["Enter invitation code", "Worry not", "Welcome to the clubs!"];
     } else {
       return ["Enter invitation code", "Welcome to the clubs!"];
@@ -259,7 +260,28 @@ export default function Signup(props) {
   const validate = () => {
     switch (activeStep) {
       case 0:
-        return invCode === secretIVCODE;
+        function doCheck() {
+          return new Promise(function(resolve, reject) {
+            if (invCode !== "") {
+              isInvCodeValid(invCode, res => {
+                console.log("signup isValid code", res);
+                const { valid, onlyEmail } = res;
+                if (valid) {
+                  setPartnerEmail(onlyEmail);
+                }
+                resolve(valid);
+              });
+            }
+          });
+        }
+        let a = false;
+
+        //continue here: make this case return the valid value
+        const aa = doCheck().then(valid => valid);
+        console.log(aa);
+        return a;
+
+      //return invCode === secretIVCODE;
       case 1:
         return true;
       case 2:

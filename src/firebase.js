@@ -136,9 +136,14 @@ export const signInGoogle = cb => {
     .signInWithPopup(provider)
     .then(function(result) {
       const email = result.user.email;
-      console.log("1");
-      isUserExist(email, res => cb({ data: result, exist: res }));
-      console.log("2");
+      const name = result.user.displayName;
+
+      isUserExist({ email, name }, res => {
+        const { exist, id, coupleInfo } = res;
+        if (exist) {
+          cb({ success: true, exist, authUser: result, coupleInfo, id });
+        } else cb({ success: false, exist });
+      });
     })
     .catch(function(error) {
       console.log(error);
@@ -269,13 +274,21 @@ export const getAuthCouple = (email, cb) => {
 };
 
 //check if user has properly signedup
-export const isUserExist = (email, cb) => {
+export const isUserExist = ({ email, name }, cb) => {
   const refCouple = firebase.firestore().collection("couple");
   refCouple
-    .where("emails", "array-contains", email)
+    .where("coupleInfo", "array-contains", { email, name })
     .get()
-    .then(function(querySnapshot) {
-      cb(!querySnapshot.empty);
+    .then(querySnapshot => {
+      const exist = !querySnapshot.empty;
+      const { coupleInfo } = querySnapshot.docs[0].data();
+      const id = querySnapshot.docs[0].id;
+
+      if (exist) {
+        cb({ exist, id, coupleInfo });
+      } else {
+        cb({ exist });
+      }
       // if (!querySnapshot.empty) {
       //   console.log("user1", querySnapshot.empty);
       // }
@@ -286,3 +299,65 @@ export const isUserExist = (email, cb) => {
       // }
     });
 };
+
+//testing
+// isUserExist({ email: "faiz@checknow.org", name: "Faiz" }, res =>
+//   console.log(res)
+// );
+
+//todo: create fucntion to check if the user is alone
+export const getCoupleStatus = ({ email, name }, cb) => {
+  firebase
+    .firestore()
+    .collection("couple")
+    .where("coupleInfo", "array-contains", { email, name })
+    .get()
+    .then(querySnapshot => {});
+};
+
+//function to check if the inv code valid, can also to check if the current user is having partner or not
+export const isInvCodeValid = (code, cb) => {
+  let response = false;
+  firebase
+    .firestore()
+    .collection("couple")
+    .doc(code)
+    .get()
+    .then(querySnapshot => {
+      const res = querySnapshot.data();
+
+      if (res !== undefined) {
+        cb({
+          valid: res.coupleInfo.length === 1,
+          onlyEmail: res.coupleInfo[0].email
+        });
+      } else cb({ valid: false });
+    });
+};
+
+//testing
+//isInvCodeValid("111a", res => console.log(res));
+
+//todo: create function to merge exisiting user email in couple collection
+export const mergeCouple = ({ code, email, name }, cb) => {
+  firebase
+    .firestore()
+    .collection("couple")
+    .doc(code)
+    .update({
+      coupleInfo: firebase.firestore.FieldValue.arrayUnion({ email, name })
+    })
+    .then(function() {
+      cb({ success: true });
+    })
+    .catch(function(error) {
+      console.error("Error adding document: ", error);
+    });
+};
+
+//testing
+// mergeCouple({ code: "1112", email: "faw@gmail.com", name: "Faw" }, res =>
+//   console.log(res)
+// );
+
+//todo: create function to merge userDB and userAuth on login

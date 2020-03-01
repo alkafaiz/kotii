@@ -148,23 +148,20 @@ export default function Login(props) {
   }, []);
 
   const handleLogin = res => {
-    console.log("3");
-    console.log(res);
     setLoading(true);
-    const isNew = res.data.additionalUserInfo.isNewUser;
-    localStorage.setItem("authUser", JSON.stringify(res.data));
+    const { success, exist, authUser, coupleInfo, id } = res;
     //todo: should check of the user has matching partner in couple collection or not
-    if (!isNew && res.exist) {
-      console.log("4");
-
+    if (success && exist) {
+      localStorage.setItem("authUser", JSON.stringify(authUser));
+      localStorage.setItem("id", id);
+      localStorage.setItem("coupleInfo", JSON.stringify(coupleInfo));
       props.history.push("/main?login=success");
     } else {
       //if not push to signup to enter inv code
       props.history.push(
-        `/signup?ref=login&new=true&id=${res.data.user.uid}&name=${res.data.user.displayName}`
+        `/signup?ref=login&new=true&id=${authUser.user.uid}&name=${authUser.user.displayName}`
       );
     }
-    console.log(res);
   };
 
   return (
