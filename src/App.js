@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import { Router, Route, Switch, Redirect } from "react-router-dom";
 import { createBrowserHistory } from "history";
@@ -11,18 +11,34 @@ import {
 import style from "./assets/jss/theme";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PrivateRoute from "./components/PrivateRoute";
-
+import { getAuthState } from "./firebase";
 const history = createBrowserHistory();
 
 function App() {
   const appTheme = responsiveFontSizes(createMuiTheme(style));
+  const [isAuth, setIsAuth] = useState(false);
+
+  const handleAuth = res => {
+    if (res === null || res === undefined) {
+      setIsAuth(false);
+      console.log("current auth: false");
+    } else console.log("current auth: true", res);
+  };
+  getAuthState(handleAuth);
 
   return (
     <ThemeProvider theme={appTheme}>
       <Router history={history}>
         <Switch>
           <Route path={ROUTES.LOGIN.path} component={ROUTES.LOGIN.component} />
-          <Route path={ROUTES.MAIN.path} component={ROUTES.MAIN.component} />
+          <PrivateRoute
+            path={ROUTES.MAIN.path}
+            component={ROUTES.MAIN.component}
+          />
+          <PrivateRoute
+            path={ROUTES.INVITE.path}
+            component={ROUTES.INVITE.component}
+          />
           <Route
             path={ROUTES.SIGNUP.path}
             component={ROUTES.SIGNUP.component}

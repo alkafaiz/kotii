@@ -1,9 +1,18 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { Box, Typography, IconButton, Container } from "@material-ui/core";
+import {
+  Box,
+  Typography,
+  IconButton,
+  Container,
+  Link
+} from "@material-ui/core";
 import DashboardIcon from "@material-ui/icons/Dashboard";
 import Moment from "../Moment";
 import MomentCreator from "../Form";
+import * as firebase from "../../firebase";
+import ExitToAppIcon from "@material-ui/icons/ExitToApp";
+import TimelineIcon from "@material-ui/icons/Timeline";
 
 const style = theme => ({
   logo: {
@@ -28,19 +37,57 @@ const style = theme => ({
   },
   momentWrapper: {
     paddingTop: theme.spacing(7)
+  },
+  textCenter: {
+    textAlign: "center"
   }
 });
 
 const useStyle = makeStyles(style);
 
-export default function Main() {
+export default function Main(props) {
   const classes = useStyle();
+  const { cUser } = props;
+  const [moment, setMoment] = useState();
+  const moments = firebase.useMoments("1111");
+
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // this one is using get()
+    // setLoading(true);
+    // const unsubscribe = firebase.getMoment("1111", res => {
+    //   setMoment(res);
+    //   setLoading(false);
+    // });
+    //return unsubscribe;
+    // this one using onSnapshot()
+  }, []);
+
+  useEffect(() => {
+    if (moments.length !== 0) {
+      setLoading(false);
+    } else setLoading(true);
+  }, [moments]);
+
+  const GenerateMoments = () => {
+    return moments !== undefined
+      ? moments.map((data, index) => {
+          console.log(data.id, index);
+          return <Moment key={data.id} data={data} />;
+        })
+      : "";
+  };
+
   return (
     <React.Fragment>
       <Box className={classes.appbarWrapper}>
         <Container className={classes.appbar}>
           <Typography className={classes.logo} variant="h4">
-            :kotii
+            :kotii{" "}
+            {loading
+              ? "is loading"
+              : `🖤 ${cUser.additionalUserInfo.profile.given_name}`}
           </Typography>
 
           <svg
@@ -74,39 +121,44 @@ export default function Main() {
               </clipPath>
             </defs>
           </svg>
-          <IconButton className={classes.btnDashboard}>
-            <DashboardIcon />
-          </IconButton>
+          <Box>
+            <IconButton
+              className={classes.btnDashboard}
+              onClick={() =>
+                firebase.signOut(res => {
+                  localStorage.removeItem("authUser");
+                  props.history.push("/login");
+                })
+              }
+            >
+              <TimelineIcon />
+            </IconButton>
+            <IconButton
+              className={classes.btnDashboard}
+              onClick={() =>
+                firebase.signOut(res => {
+                  localStorage.removeItem("authUser");
+                  props.history.push("/login");
+                })
+              }
+            >
+              <ExitToAppIcon />
+            </IconButton>
+          </Box>
         </Container>
       </Box>
       <Container className={classes.momentWrapper}>
+        <Box p={4}>
+          <Typography variant="h5" className={classes.textCenter}>
+            Why are you alone here?
+            <br />
+            <Link href="/invite" target="_blank">
+              Invite your love one!
+            </Link>
+          </Typography>
+        </Box>
         <MomentCreator />
-        <Moment
-          desc="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Enim nec
-            dui nunc mattis enim ut. Quisque egestas diam in arcu cursus.
-            Blandit massa enim nec dui nunc mattis enim ut tellus. Vel turpis
-            nunc eget lorem dolor. Fames ac turpis egestas maecenas pharetra
-            convallis posuere morbi. Nisl nunc mi ipsum faucibus vitae aliquet
-            nec. Purus gravida quis blandit turpis cursus. Mus mauris vitae
-            ultricies leo. Massa tempor nec feugiat nisl pretium fusce id velit
-            ut. In cursus turpis massa tincidunt dui. Quis eleifend quam
-            adipiscing vitae proin sagittis nisl rhoncus mattis. Nibh tellus
-            molestie nunc non blandit massa enim."
-        />
-        <Moment
-          desc="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Enim nec
-            dui nunc mattis enim ut. Quisque egestas diam in arcu cursus.
-            Blandit massa enim nec dui nunc mattis enim ut tellus. Vel turpis
-            nunc eget lorem dolor. Fames ac turpis egestas maecenas pharetra
-            convallis posuere morbi. "
-        />
-        <Moment
-          desc="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Enim nec
-            dui nunc mattis enim ut. Quisque egestas diam in arcu cursus."
-        />
+        {loading ? <Moment loading={loading} /> : GenerateMoments()}
       </Container>
     </React.Fragment>
   );

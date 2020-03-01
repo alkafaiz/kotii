@@ -7,14 +7,20 @@ import StepContent from "@material-ui/core/StepContent";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import Box from "@material-ui/core/Box";
+import Alert from "@material-ui/lab/Alert";
 import Typography from "@material-ui/core/Typography";
 import { TextField, Divider } from "@material-ui/core";
 import FacebookLogin from "react-facebook-login";
 import { GoogleLogin } from "react-google-login";
 import classnames from "classnames";
-import { validate } from "@babel/types";
-import { signUpGoogle } from "../../firebase";
+import {
+  signInGoogle,
+  signupEmailPassword,
+  getCurrentUser
+} from "../../firebase";
 import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
+import { useHistory } from "react-router-dom";
+import querystring from "query-string";
 
 const style = theme => ({
   wrapper: {
@@ -44,8 +50,9 @@ const style = theme => ({
   gridField: {
     display: "grid",
     gridTemplateRows: "1fr 1fr",
-    gridRowGap: 15,
-    width: 300
+    gridTemplateColumns: "1fr 1fr",
+    gridRowGap: 13,
+    gridColumnGap: 10
   },
   googleBtn: {
     color: theme.palette.grey[600],
@@ -61,12 +68,9 @@ const style = theme => ({
 
 const useStyle = makeStyles(style);
 
-function getSteps() {
-  return ["Enter invitation code", "Worry not", "Welcome to the clubs!"];
-}
-
 function StepInvitation(error, invCodes) {
   const [invCode, setInvCode] = invCodes;
+  const err = error[0] === 0 && error[1];
 
   return (
     <React.Fragment>
@@ -80,8 +84,8 @@ function StepInvitation(error, invCodes) {
           size="small"
           id="outlined-basic"
           label="Invitation code"
-          helperText={error ? "Invalid code" : ""}
-          error={error}
+          helperText={err ? "Invalid code" : ""}
+          error={err}
           variant="outlined"
           value={invCode}
           onChange={e => setInvCode(e.target.value)}
@@ -118,31 +122,51 @@ const GoogleIcon = () => (
 );
 
 function StepPersonalDetails(error, detail) {
+  const history = useHistory();
   const classes = useStyle();
   const [details, setDetails] = detail;
   const [googleDone, setGoogleDone] = useState(false);
-  const responseFacebook = response => {
-    console.log(response);
-  };
-  const responseGoogle = response => {
-    console.log(response);
+  const err = error[0] === 1 && error[1];
+  const [confirmPw, setConfirmPw] = useState("");
+  const [match, setMatch] = useState(false);
+
+  useEffect(() => {
+    if (confirmPw !== "") {
+      setMatch(details.password === confirmPw);
+    } else setMatch(true);
+  }, [confirmPw]);
+
+  useEffect(() => {
+    const qs = querystring.parse(history.location.search);
+    if (
+      qs.new !== undefined &&
+      qs.ref !== undefined &&
+      qs.id !== undefined &&
+      qs.name !== undefined
+    ) {
+      setGoogleDone(true);
+      setDetails({ googleId: qs.id, name: qs.name });
+    }
+  }, []);
+
+  const handleResponseGoogle = res => {
+    if (res.data.additionalUserInfo.isNewUser && !res.exist) {
+      setDetails({
+        googleId: res.user.uid,
+        email: res.user.email,
+        name: res.user.displayName,
+        photoURL: res.user.photoURL
+      });
+    } else history.push(`/login?exist=true&email=${res.user.email}`);
+    setGoogleDone(true);
   };
   return (
     <React.Fragment>
       <Typography variant="h6">Almost there! </Typography>
       <Typography variant="body1">
-        Relax, we only require some of your basic informations
+        Relax, we make this easy for you. Link us with your Google account
       </Typography>
       <Box mt={2} mb={2}>
-        {/* <FacebookLogin
-          appId="1088597931155576"
-          autoLoad={true}
-          fields="name,email,picture"
-          onClick={() => {}}
-          callback={responseFacebook}
-        />
-        */}
-
         <Box mb={2}>
           <Button
             className={classes.googleBtn}
@@ -150,125 +174,115 @@ function StepPersonalDetails(error, detail) {
             endIcon={googleDone ? <CheckCircleRoundedIcon /> : null}
             disabled={googleDone}
             classes={{ label: classes.labelbtn }}
-            onClick={() =>
-              signUpGoogle(res => {
-                setDetails({
-                  googleId: res.user.uid,
-                  email: res.user.email,
-                  name: res.user.displayName,
-                  photoURL: res.user.photoURL
-                });
-                setGoogleDone(true);
-              })
-            }
+            onClick={() => signInGoogle(handleResponseGoogle)}
           >
-            Signup with Google
+            Connect with Google
           </Button>
-          {/* <GoogleLogin
-            clientId="241794269650-ij4kcdq6esvv3cfhgj4guaod0pt94jj9.apps.googleusercontent.com"
-            buttonText="Signup with Google"
-            onSuccess={responseGoogle}
-            onFailure={responseGoogle}
-            cookiePolicy={"single_host_origin"}
-          /> */}
         </Box>
         <Divider />
-        <Box mt={2} className={classes.gridField}>
-          <TextField
-            size="small"
-            label="Nickname"
-            variant="outlined"
-            value={details.name}
-            onChange={e => {
-              e.persist();
-              setDetails(state => ({ ...state, name: e.target.value }));
-            }}
-          />
-          <TextField
-            size="small"
-            label="Email"
-            variant="outlined"
-            value={details.email}
-            onChange={e => {
-              e.persist();
-              setDetails(state => ({ ...state, email: e.target.value }));
-            }}
-          />
+        <Box mt={2} hidden={details.name === ""}>
+          <Typography variant="h6">Welcome, {details.name}</Typography>
         </Box>
       </Box>
     </React.Fragment>
   );
 }
 
-function StepCredential() {
+function StepForewords() {
   const classes = useStyle();
   return (
     <React.Fragment>
-      <Typography variant="h6">Lastt stop! </Typography>
+      <Typography variant="h6">What a sweet of you </Typography>
       <Typography variant="body1">
-        Set up secure password as your partner did🔒
+        Thanks your partner for asking you to share moments together. Enjoy!
       </Typography>
 
-      <Box mt={2} mb={2} className={classes.gridField}>
-        <TextField
-          size="small"
-          id="outlined-basic"
-          label="Password"
-          variant="outlined"
-        />
-        <TextField
-          size="small"
-          id="outlined-basic"
-          label="Confirm password"
-          variant="outlined"
-        />
-      </Box>
+      <Box mt={2} mb={2} className={classes.gridField}></Box>
     </React.Fragment>
   );
 }
 
-function getStepContent(step, error, invCode, details) {
+function getStepContent(step, error, invCode, details, withRef) {
   switch (step) {
     case 0:
       return StepInvitation(error, invCode);
     case 1:
-      return StepPersonalDetails(error, details);
+      return withRef === "login"
+        ? StepForewords
+        : StepPersonalDetails(error, details);
     case 2:
-      return StepCredential;
+      return StepForewords;
     default:
       return "Unknown step";
   }
 }
 
 const secretIVCODE = "1111";
-export default function Signup() {
+export default function Signup(props) {
   const classes = useStyle();
   const [activeStep, setActiveStep] = React.useState(0);
-  const steps = getSteps();
+
   const [invCode, setInvCode] = useState("");
-  const [error, setError] = useState(false);
+  const [error, setError] = useState([0, false, ""]);
+  const [ref, setRef] = useState("");
   const [details, setDetails] = useState({
     googleId: "",
     name: "",
     email: "",
+    password: "",
     photoURL: ""
   });
+
+  useEffect(() => {
+    const qs = querystring.parse(props.history.location.search);
+    if (
+      qs.new !== undefined &&
+      qs.ref !== undefined &&
+      qs.id !== undefined &&
+      qs.name !== undefined
+    ) {
+      setRef(qs.ref);
+      setDetails({ googleId: qs.id, name: qs.name });
+    }
+  }, []);
+
+  function steps() {
+    console.log(ref);
+    if (!ref === "login" || ref === "") {
+      console.log("eeeeeee");
+      return ["Enter invitation code", "Worry not", "Welcome to the clubs!"];
+    } else {
+      return ["Enter invitation code", "Welcome to the clubs!"];
+    }
+  }
 
   const validate = () => {
     switch (activeStep) {
       case 0:
         return invCode === secretIVCODE;
-
+      case 1:
+        return true;
+      case 2:
+        return true;
       default:
         break;
     }
   };
 
+  const handleResSignup = res => {
+    console.log(res);
+  };
+
   const handleNext = () => {
     if (validate()) {
       setActiveStep(prevActiveStep => prevActiveStep + 1);
-      setError(false);
-    } else setError(true);
+      setError([activeStep, false]);
+      if (activeStep === 2) {
+        setTimeout(() => {
+          props.history.push("/main?ref=initial");
+        }, 3000);
+      }
+    } else setError([activeStep, true]);
   };
 
   const handleBack = () => {
@@ -291,7 +305,7 @@ export default function Signup() {
         </Typography>
 
         <Stepper activeStep={activeStep} orientation="vertical">
-          {steps.map((label, index) => (
+          {steps().map((label, index) => (
             <Step key={label}>
               <StepLabel>{label}</StepLabel>
               <StepContent>
@@ -300,7 +314,8 @@ export default function Signup() {
                     index,
                     error,
                     [invCode, setInvCode],
-                    [details, setDetails]
+                    [details, setDetails],
+                    ref
                   )}
                 </Box>
                 <div className={classes.actionsContainer}>
@@ -317,6 +332,7 @@ export default function Signup() {
                       color="primary"
                       onClick={handleNext}
                       className={classes.button}
+                      disabled={activeStep === 1 && details.googleId === ""}
                     >
                       {activeStep === steps.length - 1 ? "Finish" : "Next"}
                     </Button>
@@ -331,8 +347,12 @@ export default function Signup() {
             <Typography>
               All steps completed - you&apos;re being redirected to login page..
             </Typography>
-            <Button onClick={handleReset} className={classes.button}>
-              Reset
+            <Button
+              onClick={() => props.history.push("/main?ref=initial")}
+              className={classes.button}
+              variant="text"
+            >
+              Not being redirected? Click here
             </Button>
           </Paper>
         )}

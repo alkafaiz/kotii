@@ -61,16 +61,33 @@ function getDate() {
 
 export default function Form() {
   const classes = useStyle();
-  const [title, setTitle] = useState();
-  const [body, setBody] = useState();
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [err, setErr] = useState(false);
+
+  function clearForm() {
+    setTitle("");
+    setBody("");
+  }
+
+  useEffect(() => {
+    if (title !== "" && body !== "") {
+      setErr(false);
+    } else setErr(true);
+  }, [title, body]);
 
   const handleAdd = () => {
     const obj = {
-      date: getDate(),
-      title,
-      body
+      id: "1111",
+      data: {
+        date: getDate(),
+        title,
+        body,
+        author: "1"
+      }
     };
     createMoment(obj);
+    clearForm();
   };
 
   return (
@@ -120,6 +137,7 @@ export default function Form() {
         className={classes.button}
         variant="contained"
         disableElevation
+        disabled={err}
         startIcon={<PostAddIcon />}
         onClick={e => {
           e.preventDefault();

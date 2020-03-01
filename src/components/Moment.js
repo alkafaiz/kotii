@@ -3,6 +3,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import classnames from "classnames";
 import { Box, Typography, IconButton } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
+import Skeleton from "@material-ui/lab/Skeleton";
 
 const style = theme => ({
   wrapper: {
@@ -59,12 +60,22 @@ export default function Moment(props) {
   const refWrapper = useRef(null);
   const [lineHeight, setLineHeight] = useState(0);
   const [hover, setHover] = useState(false);
+  const { loading } = props;
+
+  const [details, setDetails] = useState({ title: "", body: "", date: "" });
+
+  useEffect(() => {
+    setDetails(props.data);
+  }, []);
+
   useEffect(() => {
     const wrapperHeight = refWrapper.current.clientHeight;
     const height = wrapperHeight - 43;
+    console.log(wrapperHeight, "effex");
+
     setLineHeight(height);
-    console.log(refWrapper.current.clientHeight);
-  }, []);
+  }, [details]);
+
   return (
     <Box
       className={classes.wrapper}
@@ -79,15 +90,26 @@ export default function Moment(props) {
       <Box className={classes.content}>
         <Box className={classes.momentHeader}>
           <Box mr={1}>
-            <Typography className={classes.momentInfo} variant="body2">
-              20 February 2020
-            </Typography>
-            <Typography
-              className={classnames(classes.momentInfo, classes.bold)}
-              variant="body2"
-            >
-              Moment by Me
-            </Typography>
+            {!loading ? (
+              <React.Fragment>
+                <Typography
+                  className={classes.momentInfo}
+                  variant="body2"
+                  children={details.date}
+                />
+                <Typography
+                  className={classnames(classes.momentInfo, classes.bold)}
+                  variant="body2"
+                >
+                  Moment by Me
+                </Typography>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <Skeleton width={200} height={23} />
+                <Skeleton width={200} height={23} />
+              </React.Fragment>
+            )}
           </Box>
           <Box hidden={!hover}>
             <IconButton>
@@ -96,15 +118,30 @@ export default function Moment(props) {
           </Box>
         </Box>
         <Box className={classes.moment}>
-          <Typography
-            variant="h4"
-            className={classnames(classes.title, classes.bold)}
-          >
-            Ndud suka makan jagung pake mentega bikin Ndud
-          </Typography>
-          <Typography variant="body1" className={classes.body}>
-            {props.desc}
-          </Typography>
+          {!loading ? (
+            <React.Fragment>
+              <Typography
+                variant="h4"
+                className={classnames(classes.title, classes.bold)}
+                children={details.title}
+              />
+              <Typography
+                variant="body1"
+                className={classes.body}
+                children={details.body}
+              />
+            </React.Fragment>
+          ) : (
+            <React.Fragment>
+              <Skeleton width={350} height={45} />
+              <Box mt={3}>
+                <Skeleton width={700} height={40} />
+                <Skeleton width={700} height={40} />
+
+                <Skeleton width={200} height={40} />
+              </Box>
+            </React.Fragment>
+          )}
         </Box>
       </Box>
     </Box>
