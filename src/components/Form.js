@@ -59,12 +59,12 @@ function getDate() {
   return dateString;
 }
 
-export default function Form() {
+export default function Form(props) {
   const classes = useStyle();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [err, setErr] = useState(false);
-
+  const { id, email } = props;
   function clearForm() {
     setTitle("");
     setBody("");
@@ -78,12 +78,12 @@ export default function Form() {
 
   const handleAdd = () => {
     const obj = {
-      id: "1111",
+      id,
       data: {
         date: getDate(),
         title,
         body,
-        author: "1"
+        author: email
       }
     };
     createMoment(obj);

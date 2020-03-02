@@ -137,12 +137,13 @@ export const signInGoogle = cb => {
     .then(function(result) {
       const email = result.user.email;
       const name = result.user.displayName;
-
+      console.log(result);
       isUserExist({ email, name }, res => {
         const { exist, id, coupleInfo } = res;
+        console.log(res);
         if (exist) {
           cb({ success: true, exist, authUser: result, coupleInfo, id });
-        } else cb({ success: false, exist });
+        } else cb({ success: false, exist, authUser: result });
       });
     })
     .catch(function(error) {
@@ -281,10 +282,10 @@ export const isUserExist = ({ email, name }, cb) => {
     .get()
     .then(querySnapshot => {
       const exist = !querySnapshot.empty;
-      const { coupleInfo } = querySnapshot.docs[0].data();
-      const id = querySnapshot.docs[0].id;
 
       if (exist) {
+        const { coupleInfo } = querySnapshot.docs[0].data();
+        const id = querySnapshot.docs[0].id;
         cb({ exist, id, coupleInfo });
       } else {
         cb({ exist });
@@ -329,7 +330,8 @@ export const isInvCodeValid = (code, cb) => {
       if (res !== undefined) {
         cb({
           valid: res.coupleInfo.length === 1,
-          onlyEmail: res.coupleInfo[0].email
+          onlyEmail: res.coupleInfo[0].email,
+          onlyName: res.coupleInfo[0].name
         });
       } else cb({ valid: false });
     });

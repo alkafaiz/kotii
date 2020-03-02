@@ -17,12 +17,13 @@ import {
   signInGoogle,
   signupEmailPassword,
   getCurrentUser,
-  isInvCodeValid
+  isInvCodeValid,
+  mergeCouple
 } from "../../firebase";
 import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
 import { useHistory } from "react-router-dom";
 import querystring from "query-string";
-import { returnStatement } from "@babel/types";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
 const style = theme => ({
   wrapper: {
@@ -41,7 +42,9 @@ const style = theme => ({
     marginRight: theme.spacing(1)
   },
   actionsContainer: {
-    marginBottom: theme.spacing(2)
+    marginBottom: theme.spacing(2),
+    display: "flex",
+    alignItems: "center"
   },
   resetContainer: {
     padding: theme.spacing(3)
@@ -89,8 +92,11 @@ function StepInvitation(error, invCodes) {
           helperText={err ? "Invalid code" : ""}
           error={err}
           variant="outlined"
-          value={invCode}
-          onChange={e => setInvCode(e.target.value)}
+          value={invCode.value}
+          onChange={e => {
+            e.persist();
+            setInvCode(prevState => ({ ...prevState, value: e.target.value }));
+          }}
         />
       </Box>
     </React.Fragment>
@@ -127,6 +133,7 @@ function StepPersonalDetails(error, detail) {
   const history = useHistory();
   const classes = useStyle();
   const [details, setDetails] = detail;
+
   const [googleDone, setGoogleDone] = useState(false);
   const err = error[0] === 1 && error[1];
   const [confirmPw, setConfirmPw] = useState("");
@@ -152,14 +159,22 @@ function StepPersonalDetails(error, detail) {
   }, []);
 
   const handleResponseGoogle = res => {
-    if (res.data.additionalUserInfo.isNewUser && !res.exist) {
+    const { success, exist, authUser, coupleInfo, id } = res;
+    localStorage.setItem("authUser", JSON.stringify(authUser));
+    //if user has already exist => redirect to main with all the details
+    //if user has not been coupled => merge to db then store to local
+    if (success && exist) {
+      localStorage.setItem("coupleInfo", JSON.stringify(coupleInfo));
+      history.push(`/main?ref=signup&exist=true`);
+    } else {
       setDetails({
-        googleId: res.user.uid,
-        email: res.user.email,
-        name: res.user.displayName,
-        photoURL: res.user.photoURL
+        googleId: authUser.user.uid,
+        email: authUser.user.email,
+        name: authUser.user.displayName,
+        photoURL: authUser.user.photoURL
       });
-    } else history.push(`/login?exist=true&email=${res.user.email}`);
+    }
+
     setGoogleDone(true);
   };
   return (
@@ -190,21 +205,21 @@ function StepPersonalDetails(error, detail) {
   );
 }
 
-function StepForewords() {
-  const classes = useStyle();
+function StepForewords({ email, name }) {
   return (
     <React.Fragment>
       <Typography variant="h6">What a sweet of you </Typography>
-      <Typography variant="body1">
-        Thanks your partner for asking you to share moments together. Enjoy!
+      <Typography variant="body1" gutterBottom>
+        Say thanks to {name} for inviting you to share moments together. Enjoy!
       </Typography>
-
-      <Box mt={2} mb={2} className={classes.gridField}></Box>
+      <Typography color="textSecondary" variant="caption">
+        info: You've been invited here by {email}
+      </Typography>
     </React.Fragment>
   );
 }
 
-function getStepContent(step, error, invCode, details, withRef) {
+function getStepContent(step, error, invCode, details, withRef, invitor) {
   switch (step) {
     case 0:
       return StepInvitation(error, invCode);
@@ -213,7 +228,7 @@ function getStepContent(step, error, invCode, details, withRef) {
         ? StepForewords
         : StepPersonalDetails(error, details);
     case 2:
-      return StepForewords;
+      return StepForewords(invitor);
     default:
       return "Unknown step";
   }
@@ -223,8 +238,8 @@ const secretIVCODE = "1111";
 export default function Signup(props) {
   const classes = useStyle();
   const [activeStep, setActiveStep] = React.useState(0);
-
-  const [invCode, setInvCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [invCode, setInvCode] = useState({ value: "", valid: false });
   const [error, setError] = useState([0, false, ""]);
   const [ref, setRef] = useState("");
   const [details, setDetails] = useState({
@@ -232,9 +247,10 @@ export default function Signup(props) {
     name: "",
     email: "",
     password: "",
-    photoURL: ""
+    photoURL: "",
+    coupleInfo: {}
   });
-  const [partnerEmail, setPartnerEmail] = useState("");
+  const [invitor, setInvitor] = useState({});
 
   useEffect(() => {
     const qs = querystring.parse(props.history.location.search);
@@ -249,6 +265,36 @@ export default function Signup(props) {
     }
   }, []);
 
+  useEffect(() => {
+    const code = invCode.value;
+    if (code !== "") {
+      setLoading(true);
+      function doCheck() {
+        return new Promise(function(resolve, reject) {
+          if (code !== "") {
+            isInvCodeValid(code, res => {
+              console.log("signup isValid code", res);
+              const { valid, onlyEmail, onlyName } = res;
+              if (valid) {
+                setInvitor({ name: onlyName, email: onlyEmail });
+              }
+              resolve(valid);
+            });
+          }
+        });
+      }
+
+      async function doWork() {
+        const valid = await doCheck();
+        console.log("no 1", valid);
+        setInvCode(ps => ({ ...ps, valid }));
+        setLoading(false);
+      }
+
+      doWork();
+    }
+  }, [invCode.value]);
+
   function steps() {
     if (!ref === "login" || ref === "") {
       return ["Enter invitation code", "Worry not", "Welcome to the clubs!"];
@@ -260,27 +306,9 @@ export default function Signup(props) {
   const validate = () => {
     switch (activeStep) {
       case 0:
-        function doCheck() {
-          return new Promise(function(resolve, reject) {
-            if (invCode !== "") {
-              isInvCodeValid(invCode, res => {
-                console.log("signup isValid code", res);
-                const { valid, onlyEmail } = res;
-                if (valid) {
-                  setPartnerEmail(onlyEmail);
-                }
-                resolve(valid);
-              });
-            }
-          });
-        }
-        let a = false;
-
         //continue here: make this case return the valid value
-        const aa = doCheck().then(valid => valid);
-        console.log(aa);
-        return a;
 
+        return true;
       //return invCode === secretIVCODE;
       case 1:
         return true;
@@ -299,7 +327,19 @@ export default function Signup(props) {
     if (validate()) {
       setActiveStep(prevActiveStep => prevActiveStep + 1);
       setError([activeStep, false]);
-      if (activeStep === 2) {
+
+      if (activeStep === 0) {
+        localStorage.setItem("id", invCode);
+      } else if (activeStep === 1) {
+        mergeCouple(
+          { code: invCode.value, email: details.email, name: details.name },
+          res => {
+            if (res.success) {
+              console.log("merged couple successfully");
+            } else console.log("merging failed");
+          }
+        );
+      } else if (activeStep === 2) {
         setTimeout(() => {
           props.history.push("/main?ref=initial");
         }, 3000);
@@ -337,7 +377,8 @@ export default function Signup(props) {
                     error,
                     [invCode, setInvCode],
                     [details, setDetails],
-                    ref
+                    ref,
+                    invitor
                   )}
                 </Box>
                 <div className={classes.actionsContainer}>
@@ -354,17 +395,25 @@ export default function Signup(props) {
                       color="primary"
                       onClick={handleNext}
                       className={classes.button}
-                      disabled={activeStep === 1 && details.googleId === ""}
+                      disabled={
+                        (activeStep === 1 && details.googleId === "") ||
+                        (activeStep === 0 && invCode.value === "") ||
+                        !invCode.valid
+                      }
                     >
-                      {activeStep === steps.length - 1 ? "Finish" : "Next"}
+                      {activeStep === steps().length - 1 ? "Finish" : "Next"}
                     </Button>
                   </div>
+                  <CircularProgress
+                    className={!loading ? classes.hide : ""}
+                    size={25}
+                  />
                 </div>
               </StepContent>
             </Step>
           ))}
         </Stepper>
-        {activeStep === steps.length && (
+        {activeStep === steps().length && (
           <Paper square elevation={0} className={classes.resetContainer}>
             <Typography>
               All steps completed - you&apos;re being redirected to login page..

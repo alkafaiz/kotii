@@ -48,26 +48,23 @@ const useStyle = makeStyles(style);
 export default function Main(props) {
   const classes = useStyle();
   const { cUser } = props;
-  const [moment, setMoment] = useState();
-  const moments = firebase.useMoments("1111");
 
-  const [loading, setLoading] = useState(false);
+  const moments = firebase.useMoments("1112");
+
+  const [loading, setLoading] = useState(true);
+  const [didMount, setDidMount] = useState(false);
 
   useEffect(() => {
-    // this one is using get()
-    // setLoading(true);
-    // const unsubscribe = firebase.getMoment("1111", res => {
-    //   setMoment(res);
-    //   setLoading(false);
-    // });
-    //return unsubscribe;
-    // this one using onSnapshot()
+    setDidMount(true);
+    setLoading(false);
+    console.log(props);
   }, []);
 
   useEffect(() => {
-    if (moments.length !== 0) {
-      setLoading(false);
-    } else setLoading(true);
+    if (didMount) {
+      if (moments.length !== 0) {
+      }
+    }
   }, [moments]);
 
   const GenerateMoments = () => {
@@ -127,6 +124,8 @@ export default function Main(props) {
               onClick={() =>
                 firebase.signOut(res => {
                   localStorage.removeItem("authUser");
+                  localStorage.removeItem("id");
+                  localStorage.removeItem("coupleInfo");
                   props.history.push("/login");
                 })
               }
@@ -157,7 +156,12 @@ export default function Main(props) {
             </Link>
           </Typography>
         </Box>
-        <MomentCreator />
+        <MomentCreator id={props.cCouple.id} email={props.cUser.user.email} />
+        {moments.length === 0 && (
+          <Typography variant="subtitle1">
+            You have not created any moments yet
+          </Typography>
+        )}
         {loading ? <Moment loading={loading} /> : GenerateMoments()}
       </Container>
     </React.Fragment>
