@@ -73,9 +73,12 @@ const style = theme => ({
 
 const useStyle = makeStyles(style);
 
-function StepInvitation(error, invCodes) {
-  const [invCode, setInvCode] = invCodes;
+function StepInvitation(props) {
+  const { error, invCode } = props;
+  console.log(invCode);
+  const [invCodes, setInvCodes] = invCode;
   const err = error[0] === 0 && error[1];
+  console.log("object", invCodes);
 
   return (
     <React.Fragment>
@@ -92,10 +95,10 @@ function StepInvitation(error, invCodes) {
           helperText={err ? "Invalid code" : ""}
           error={err}
           variant="outlined"
-          value={invCode.value}
+          value={invCodes.value}
           onChange={e => {
             e.persist();
-            setInvCode(prevState => ({ ...prevState, value: e.target.value }));
+            setInvCodes(prevState => ({ ...prevState, value: e.target.value }));
           }}
         />
       </Box>
@@ -222,13 +225,15 @@ function StepForewords({ email, name }) {
 function getStepContent(step, error, invCode, details, withRef, invitor) {
   switch (step) {
     case 0:
-      return StepInvitation(error, invCode);
+      return <StepInvitation error={error} invCode={invCode} />;
     case 1:
-      return withRef === "login"
-        ? StepForewords
-        : StepPersonalDetails(error, details);
+      return withRef === "login" ? (
+        <StepForewords invitor={invitor} />
+      ) : (
+        <StepPersonalDetails error={error} details={details} />
+      );
     case 2:
-      return StepForewords(invitor);
+      return <StepForewords invitor={invitor} />;
     default:
       return "Unknown step";
   }
@@ -252,6 +257,8 @@ export default function Signup(props) {
   });
   const [invitor, setInvitor] = useState({});
 
+  const [didMount, setDidMount] = useState(false);
+
   useEffect(() => {
     const qs = querystring.parse(props.history.location.search);
     if (
@@ -263,11 +270,12 @@ export default function Signup(props) {
       setRef(qs.ref);
       setDetails({ googleId: qs.id, name: qs.name });
     }
+    setDidMount(true);
   }, []);
 
   useEffect(() => {
     const code = invCode.value;
-    if (code !== "") {
+    if (didMount && code !== "") {
       setLoading(true);
       function doCheck() {
         return new Promise(function(resolve, reject) {
@@ -286,7 +294,7 @@ export default function Signup(props) {
 
       async function doWork() {
         const valid = await doCheck();
-        console.log("no 1", valid);
+
         setInvCode(ps => ({ ...ps, valid }));
         setLoading(false);
       }
@@ -294,6 +302,10 @@ export default function Signup(props) {
       doWork();
     }
   }, [invCode.value]);
+
+  useEffect(() => {
+    validate();
+  }, [details]);
 
   function steps() {
     if (!ref === "login" || ref === "") {
@@ -354,10 +366,7 @@ export default function Signup(props) {
   const handleReset = () => {
     setActiveStep(0);
   };
-  useEffect(() => {
-    console.log(details);
-    validate();
-  }, [details]);
+
   return (
     <Box className={classes.wrapper}>
       <Paper className={classes.paper} variant="outlined" elevation={0}>

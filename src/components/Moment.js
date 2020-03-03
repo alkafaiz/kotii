@@ -57,12 +57,20 @@ const useStyle = makeStyles(style);
 
 export default function Moment(props) {
   const classes = useStyle();
+  const { couple, cUserEmail } = props;
   const refWrapper = useRef(null);
   const [lineHeight, setLineHeight] = useState(0);
   const [hover, setHover] = useState(false);
   const { loading } = props;
 
-  const [details, setDetails] = useState({ title: "", body: "", date: "" });
+  //const { title, body, author } = props.data;
+
+  const [details, setDetails] = useState({
+    title: "",
+    body: "",
+    date: "",
+    author: ""
+  });
 
   useEffect(() => {
     setDetails(props.data);
@@ -71,10 +79,23 @@ export default function Moment(props) {
   useEffect(() => {
     const wrapperHeight = refWrapper.current.clientHeight;
     const height = wrapperHeight - 43;
-    console.log(wrapperHeight, "effex");
 
     setLineHeight(height);
   }, [details]);
+
+  const getAuthor = () => {
+    const authorEmail = details.author;
+    let name = "";
+    if (authorEmail === cUserEmail) {
+      name += "Me";
+    } else {
+      const partner = couple.find(value => value.email !== cUserEmail);
+      const partnerName = partner.name;
+      name += partnerName;
+    }
+
+    return name;
+  };
 
   return (
     <Box
@@ -101,7 +122,7 @@ export default function Moment(props) {
                   className={classnames(classes.momentInfo, classes.bold)}
                   variant="body2"
                 >
-                  Moment by Me
+                  Moment by {getAuthor()}
                 </Typography>
               </React.Fragment>
             ) : (

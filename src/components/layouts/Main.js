@@ -47,8 +47,8 @@ const useStyle = makeStyles(style);
 
 export default function Main(props) {
   const classes = useStyle();
-  const { cUser } = props;
-
+  const { cUser, cCouple } = props;
+  console.log(props);
   const moments = firebase.useMoments("1112");
 
   const [loading, setLoading] = useState(true);
@@ -71,9 +71,29 @@ export default function Main(props) {
     return moments !== undefined
       ? moments.map((data, index) => {
           console.log(data.id, index);
-          return <Moment key={data.id} data={data} />;
+          //continue: pass author email then show name
+          return (
+            <Moment
+              key={data.id}
+              data={data}
+              couple={cCouple.couple}
+              cUserEmail={cUser.user.email}
+            />
+          );
         })
       : "";
+  };
+
+  const getPartnerName = () => {
+    const currentUserEmail = cUser.user.email;
+    const couple = cCouple.couple;
+    let name = "";
+    couple.forEach(value => {
+      if (value.email !== currentUserEmail) {
+        name += value.name;
+      }
+    });
+    return name;
   };
 
   return (
@@ -148,13 +168,19 @@ export default function Main(props) {
       </Box>
       <Container className={classes.momentWrapper}>
         <Box p={4}>
-          <Typography variant="h5" className={classes.textCenter}>
-            Why are you alone here?
-            <br />
-            <Link href="/invite" target="_blank">
-              Invite your love one!
-            </Link>
-          </Typography>
+          {cCouple.couple.length === 1 ? (
+            <Typography variant="h5" className={classes.textCenter}>
+              Why are you alone here?
+              <br />
+              <Link href="/invite" target="_blank">
+                Invite your love one!
+              </Link>
+            </Typography>
+          ) : (
+            <Typography variant="h6" className={classes.textCenter}>
+              You are here sharing moments with {getPartnerName()}
+            </Typography>
+          )}
         </Box>
         <MomentCreator id={props.cCouple.id} email={props.cUser.user.email} />
         {moments.length === 0 && (
