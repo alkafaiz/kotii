@@ -6,10 +6,12 @@ import {
   Typography,
   TextField,
   Button,
+  Collapse,
+  Paper,
   IconButton
 } from "@material-ui/core";
 import PostAddIcon from "@material-ui/icons/PostAdd";
-import { createMoment } from "../firebase";
+import { createMoment, uploadImg } from "../firebase";
 import ImageRoundedIcon from "@material-ui/icons/ImageRounded";
 import CancelRoundedIcon from "@material-ui/icons/CancelRounded";
 
@@ -41,17 +43,21 @@ const style = theme => ({
     justifyContent: "space-between"
   },
   imageContainer: {
-    height: 150,
+    // height: 150,
     width: "100%",
     backgroundColor: theme.palette.grey[100],
     display: "flex",
-    alignItems: "center"
+    alignItems: "center",
+    flexFlow: "row wrap",
+    marginBottom: theme.spacing(3)
   },
   imageItem: {
     height: 130,
     width: 130,
     backgroundColor: theme.palette.grey[300],
     marginLeft: 10,
+    marginTop: 10,
+    marginBottom: 10,
     position: "relative",
     display: "flex",
     justifyContent: "center",
@@ -117,10 +123,13 @@ export default function Form(props) {
   const [err, setErr] = useState(false);
   const { id, email } = props;
   const [uploadImages, setUploadImages] = useState([]);
+  const [blobImgs, setBlobImgs] = useState([]);
 
   function clearForm() {
     setTitle("");
     setBody("");
+    setBlobImgs([]);
+    setUploadImages([]);
   }
 
   useEffect(() => {
@@ -137,9 +146,11 @@ export default function Form(props) {
         title,
         body,
         author: email
-      }
+      },
+      images: blobImgs
     };
     createMoment(obj);
+
     clearForm();
   };
 
@@ -147,17 +158,27 @@ export default function Form(props) {
     const file = inputImgRef.current.files[0];
     const fr = new FileReader();
     if (file) {
-      const image = URL.createObjectURL(e.target.files[0]);
+      const rawFile = e.target.files[0];
+      const image = URL.createObjectURL(rawFile);
       console.log("imput image ref", e.target.files[0]);
       setUploadImages(ps => [...ps, image]);
+      setBlobImgs(ps => [...ps, rawFile]);
     }
   };
 
   const ImageItemUpload = props => {
-    const { img } = props;
+    const { img, raw } = props;
+    function removeImg() {
+      setUploadImages(prev => prev.filter(data => data !== img));
+      setBlobImgs(prev => prev.filter(data => data !== raw));
+    }
     return (
       <Box className={classes.imageItem}>
-        <IconButton className={classes.imageClose} size="small">
+        <IconButton
+          className={classes.imageClose}
+          size="small"
+          onClick={removeImg}
+        >
           <CancelRoundedIcon />
         </IconButton>
         <img className={classes.imageUpload} src={img} alt="" />
@@ -208,15 +229,22 @@ export default function Form(props) {
           onChange={e => setBody(e.currentTarget.value)}
         />
       </Box>
-      <Box className={classes.imageContainer} mb={3}>
-        {console.log(uploadImages)}
-        {uploadImages.length !== 0
-          ? uploadImages.map((data, index) => {
-              console.log(data);
-              return <ImageItemUpload key={index} img={data} />;
-            })
-          : ""}
-      </Box>
+      {console.log(uploadImages)}
+      <Collapse in={uploadImages.length !== 0}>
+        <Box className={classes.imageContainer}>
+          {uploadImages.length !== 0
+            ? uploadImages.map((data, index) => {
+                return (
+                  <ImageItemUpload
+                    key={index}
+                    img={data}
+                    raw={blobImgs[index]}
+                  />
+                );
+              })
+            : ""}
+        </Box>
+      </Collapse>
       <Box className={classes.buttonContainer}>
         <input
           accept="image/*"

@@ -9,6 +9,7 @@ import "firebase/analytics";
 // Add the Firebase products that you want to use
 import "firebase/auth";
 import "firebase/firestore";
+import "firebase/storage";
 
 // TODO: Replace the following with your app's Firebase project configuration
 var firebaseConfig = {
@@ -60,7 +61,7 @@ export const createUser = ({ id, data }) => {
     });
 };
 
-export const createMoment = ({ id, data }) => {
+export const createMoment = ({ id, data, images }) => {
   firebase
     .firestore()
     .collection("couple")
@@ -71,11 +72,26 @@ export const createMoment = ({ id, data }) => {
       timestamp: firebase.firestore.FieldValue.serverTimestamp()
     })
     .then(function(docRef) {
-      console.log("Document written with ID: ", docRef);
+      console.log("Document written with ID: ", docRef.id);
+      if (images.length !== 0) {
+        uploadImg({ id, momentId: docRef.id, images }, res => console.log(res));
+      }
     })
     .catch(function(error) {
       console.error("Error adding document: ", error);
     });
+};
+
+export const uploadImg = ({ id, momentId, images }, callback) => {
+  images.forEach(data => {
+    //create storage ref
+    const ref = firebase
+      .storage()
+      .ref(`momentsPhoto/${id}/${momentId}/${data.name}`);
+    //upload file
+    ref.put(data).then(res => console.log("response upload", res));
+  });
+  callback({ finish: true });
 };
 
 export const getMoment = (id, cb = () => {}) => {

@@ -57,7 +57,7 @@ const useStyle = makeStyles(style);
 
 export default function Moment(props) {
   const classes = useStyle();
-  const { couple, cUserEmail } = props;
+  const { couple, cUserEmail, key } = props;
   const refWrapper = useRef(null);
   const [lineHeight, setLineHeight] = useState(0);
   const [hover, setHover] = useState(false);
