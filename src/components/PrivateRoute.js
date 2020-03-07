@@ -10,14 +10,12 @@ export default function PrivateRoute({ component: Component, ...rest }) {
 
   const couple = JSON.parse(localStorage.getItem("coupleInfo"));
   const id = localStorage.getItem("id");
-  console.log(isAuth);
 
   return (
     <Route
       {...rest}
       render={props => {
         if (isAuth) {
-          console.log(isAuth);
           return (
             <Component
               {...props}

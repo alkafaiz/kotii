@@ -5,6 +5,8 @@ import { Box, Typography, IconButton } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import Skeleton from "@material-ui/lab/Skeleton";
 
+import { getImagesByMoment } from "../firebase";
+
 const style = theme => ({
   wrapper: {
     display: "grid",
@@ -50,6 +52,29 @@ const style = theme => ({
   },
   bold: {
     fontWeight: 600
+  },
+  ImagesContainer: {
+    width: "100%",
+    display: "flex",
+    flexFlow: "row wrap"
+  },
+  imgWrapper: {
+    height: 450,
+    width: 450,
+    backgroundColor: theme.palette.grey[300],
+    marginRight: 10,
+    marginBottom: 10,
+    position: "relative",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+    "& img": {
+      minHeight: "100%",
+      maxWidth: "100%",
+      flexShrink: 0,
+      objectFit: "cover"
+    }
   }
 });
 
@@ -57,23 +82,41 @@ const useStyle = makeStyles(style);
 
 export default function Moment(props) {
   const classes = useStyle();
-  const { couple, cUserEmail, key } = props;
+  const { couple, cUserEmail, data } = props;
   const refWrapper = useRef(null);
   const [lineHeight, setLineHeight] = useState(0);
   const [hover, setHover] = useState(false);
   const { loading } = props;
-
-  //const { title, body, author } = props.data;
+  const [images, setImages] = useState([]);
 
   const [details, setDetails] = useState({
+    id: "",
     title: "",
     body: "",
     date: "",
     author: ""
   });
 
+  //create fx to load img
+  function loadImg() {
+    //process response
+    function handleRes(res) {
+      setImages(prev => [...prev, res]);
+    }
+
+    const params = {
+      coupleId: localStorage.getItem("id"),
+      momentId: props.id
+    };
+
+    getImagesByMoment(params, handleRes);
+  }
+
   useEffect(() => {
-    setDetails(props.data);
+    if (!loading) {
+      setDetails(props.data);
+      loadImg();
+    }
   }, []);
 
   useEffect(() => {
@@ -81,7 +124,7 @@ export default function Moment(props) {
     const height = wrapperHeight - 43;
 
     setLineHeight(height);
-  }, [details]);
+  }, [details, images]);
 
   const getAuthor = () => {
     const authorEmail = details.author;
@@ -146,6 +189,15 @@ export default function Moment(props) {
                 className={classnames(classes.title, classes.bold)}
                 children={details.title}
               />
+              <Box my={2} className={classes.ImagesContainer}>
+                {images.length !== 0
+                  ? images.map((url, index) => (
+                      <Box key={index} className={classes.imgWrapper}>
+                        <img key={url} src={url} alt="" />
+                      </Box>
+                    ))
+                  : null}
+              </Box>
               <Typography
                 variant="body1"
                 className={classes.body}

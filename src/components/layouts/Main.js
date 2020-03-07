@@ -48,8 +48,7 @@ const useStyle = makeStyles(style);
 export default function Main(props) {
   const classes = useStyle();
   const { cUser, cCouple } = props;
-  console.log(props);
-  const moments = firebase.useMoments("1112");
+  const moments = firebase.useMoments(localStorage.getItem("id"));
 
   const [loading, setLoading] = useState(true);
   const [didMount, setDidMount] = useState(false);
@@ -57,7 +56,6 @@ export default function Main(props) {
   useEffect(() => {
     setDidMount(true);
     setLoading(false);
-    console.log(props);
   }, []);
 
   useEffect(() => {
@@ -76,6 +74,7 @@ export default function Main(props) {
             <Moment
               key={data.id}
               data={data}
+              id={data.id}
               couple={cCouple.couple}
               cUserEmail={cUser.user.email}
             />
@@ -183,12 +182,8 @@ export default function Main(props) {
           )}
         </Box>
         <MomentCreator id={props.cCouple.id} email={props.cUser.user.email} />
-        {moments.length === 0 && (
-          <Typography variant="subtitle1">
-            You have not created any moments yet
-          </Typography>
-        )}
-        {loading ? <Moment loading={loading} /> : GenerateMoments()}
+        {moments.length === 0 && <Moment loading={true} />}
+        {!loading && GenerateMoments()}
       </Container>
     </React.Fragment>
   );

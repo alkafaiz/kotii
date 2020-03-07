@@ -11,7 +11,6 @@ import "firebase/auth";
 import "firebase/firestore";
 import "firebase/storage";
 
-// TODO: Replace the following with your app's Firebase project configuration
 var firebaseConfig = {
   apiKey: process.env.REACT_APP_apiKey,
   authDomain: process.env.REACT_APP_authDomain,
@@ -93,6 +92,38 @@ export const uploadImg = ({ id, momentId, images }, callback) => {
   });
   callback({ finish: true });
 };
+
+//todo: handle images newly posted moment, it should automatically shown. as per now, it loads to finish uploading first
+
+export function getImagesByMoment(
+  { coupleId, momentId = "WJuHJGTg1dzerU1jkzew" },
+  callback
+) {
+  const storageRef = firebase
+    .storage()
+    .ref("momentsPhoto")
+    .child(`${coupleId}/${momentId}`);
+
+  storageRef
+    .listAll()
+    .then(function(res) {
+      // res.prefixes.forEach(function(folderRef) {
+      //   console.log("prefixes", folderRef);
+      // });
+      // res.items[0].getDownloadURL(function(url) {
+      //   callback(url);
+      // });
+      res.items.forEach(function(itemRef) {
+        itemRef.getDownloadURL().then(url => callback(url));
+      });
+      console.log(
+        "searching images for " + momentId + " and ",
+        res.items.length,
+        " found"
+      );
+    })
+    .catch(err => console.log(err));
+}
 
 export const getMoment = (id, cb = () => {}) => {
   firebase

@@ -11,7 +11,7 @@ import {
   IconButton
 } from "@material-ui/core";
 import PostAddIcon from "@material-ui/icons/PostAdd";
-import { createMoment, uploadImg } from "../firebase";
+import { createMoment, uploadImg, getImagesByMoment } from "../firebase";
 import ImageRoundedIcon from "@material-ui/icons/ImageRounded";
 import CancelRoundedIcon from "@material-ui/icons/CancelRounded";
 
@@ -229,7 +229,7 @@ export default function Form(props) {
           onChange={e => setBody(e.currentTarget.value)}
         />
       </Box>
-      {console.log(uploadImages)}
+
       <Collapse in={uploadImages.length !== 0}>
         <Box className={classes.imageContainer}>
           {uploadImages.length !== 0
