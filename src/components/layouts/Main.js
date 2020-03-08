@@ -21,7 +21,10 @@ const style = theme => ({
   appbarWrapper: {
     borderBottom: "1px solid",
     minHeight: 88,
-    borderBottomColor: theme.palette.divider
+    borderBottomColor: theme.palette.divider,
+    [theme.breakpoints.only("xs")]: {
+      minHeight: 40
+    }
   },
   appbar: {
     display: "flex",
@@ -36,10 +39,21 @@ const style = theme => ({
     color: theme.palette.common.black
   },
   momentWrapper: {
-    paddingTop: theme.spacing(7)
+    paddingTop: theme.spacing(7),
+    [theme.breakpoints.only("xs")]: {
+      paddingTop: 0
+    }
   },
   textCenter: {
-    textAlign: "center"
+    textAlign: "center",
+    [theme.breakpoints.only("xs")]: {
+      fontSize: "1em"
+    }
+  },
+  cat: {
+    [theme.breakpoints.only("xs")]: {
+      display: "none"
+    }
   }
 });
 
@@ -107,6 +121,7 @@ export default function Main(props) {
           </Typography>
 
           <svg
+            className={classes.cat}
             width="87"
             height="87"
             viewBox="0 0 87 87"
@@ -166,7 +181,7 @@ export default function Main(props) {
         </Container>
       </Box>
       <Container className={classes.momentWrapper}>
-        <Box p={4}>
+        <Box p={{ xs: 1, sm: 4 }}>
           {cCouple.couple.length === 1 ? (
             <Typography variant="h5" className={classes.textCenter}>
               Why are you alone here?

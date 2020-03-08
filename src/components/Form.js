@@ -24,25 +24,47 @@ const style = theme => ({
     border: "1px solid black",
     borderRadius: 6,
     padding: theme.spacing(5),
-    marginBottom: theme.spacing(9)
+    marginBottom: theme.spacing(9),
+    [theme.breakpoints.only("xs")]: {
+      margin: 0,
+      marginBottom: theme.spacing(7),
+      padding: theme.spacing(1)
+    }
   },
   input: {
-    fontSize: 21
+    fontSize: 21,
+    [theme.breakpoints.only("xs")]: {
+      fontSize: "1em"
+    }
   },
   label: {
     fontSize: 21,
     paddingRight: 10,
-    backgroundColor: "white"
+    backgroundColor: "white",
+    [theme.breakpoints.only("xs")]: {
+      fontSize: "1em"
+    }
   },
   button: {
     backgroundColor: "black",
     color: "white",
     borderRadius: 50,
-    fontFamily: "Montserrat"
+    fontFamily: "Montserrat",
+    [theme.breakpoints.only("xs")]: {
+      fontSize: ".7em",
+      "&:not(last-child)": {
+        marginBottom: theme.spacing(1)
+      }
+    }
   },
   buttonContainer: {
     display: "flex",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
+    [theme.breakpoints.only("xs")]: {
+      justifyContent: "center",
+      flexFlow: "column wrap",
+      alignItems: "flex-start"
+    }
   },
   imageContainer: {
     // height: 150,
@@ -51,7 +73,10 @@ const style = theme => ({
     display: "flex",
     alignItems: "center",
     flexFlow: "row wrap",
-    marginBottom: theme.spacing(3)
+    marginBottom: theme.spacing(3),
+    [theme.breakpoints.only("xs")]: {
+      backgroundColor: theme.palette.common.white
+    }
   },
   imageItem: {
     height: 130,
@@ -70,6 +95,11 @@ const style = theme => ({
       maxWidth: "100%",
       flexShrink: 0,
       objectFit: "cover"
+    },
+    [theme.breakpoints.only("xs")]: {
+      height: "auto",
+      width: "100%",
+      marginLeft: 0
     }
   },
   imageClose: {
@@ -85,6 +115,16 @@ const style = theme => ({
   imageUpload: {},
   inputImage: {
     display: "none"
+  },
+  responsiveH4: {
+    [theme.breakpoints.only("xs")]: {
+      fontSize: "1em"
+    }
+  },
+  responsiveH5: {
+    [theme.breakpoints.only("xs")]: {
+      fontSize: "1em"
+    }
   }
 });
 
@@ -173,11 +213,11 @@ export default function Form(props) {
 
   return (
     <Box className={classes.wrapper}>
-      <Typography variant="h4">
+      <Typography variant="h4" className={classes.responsiveH4}>
         Hey! 👋 Neither you nor your partner have created moment today,
       </Typography>
       <Box mt={2}>
-        <Typography variant="h5">
+        <Typography variant="h5" className={classes.responsiveH5}>
           Let's create one before you forgeet! 😄
         </Typography>
       </Box>
@@ -197,7 +237,7 @@ export default function Form(props) {
           onChange={e => setTitle(e.currentTarget.value)}
         />
       </Box>
-      <Box mt={3} mb={2}>
+      <Box mt={{ xs: 2, sm: 3 }} mb={2}>
         <TextField
           InputProps={{
             classes: {

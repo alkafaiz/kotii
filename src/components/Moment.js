@@ -10,7 +10,10 @@ import { getImagesByMoment } from "../firebase";
 const style = theme => ({
   wrapper: {
     display: "grid",
-    gridTemplateColumns: "100px 1fr"
+    gridTemplateColumns: "100px 1fr",
+    [theme.breakpoints.only("xs")]: {
+      gridTemplateColumns: "20px 1fr"
+    }
   },
   timeliner: {
     display: "flex",
@@ -22,11 +25,15 @@ const style = theme => ({
     width: 40,
     height: 40,
     borderRadius: "50%",
-    border: "2px solid black"
+    border: "2px solid black",
+    [theme.breakpoints.only("xs")]: {
+      width: 15,
+      height: 15
+    }
   },
   line: {
     width: 3,
-
+    height: "100%",
     backgroundColor: theme.palette.common.black
   },
   content: {
@@ -35,7 +42,11 @@ const style = theme => ({
     justifyContent: "flex-start",
     alignItems: "flex-start",
     paddingBottom: theme.spacing(15),
-    paddingLeft: theme.spacing(2)
+    paddingLeft: theme.spacing(2),
+    [theme.breakpoints.only("xs")]: {
+      paddingBottom: theme.spacing(5),
+      paddingLeft: theme.spacing(1)
+    }
   },
   momentHeader: {
     display: "flex",
@@ -43,12 +54,20 @@ const style = theme => ({
     justifyContent: "flex-start",
     minHeight: 49
   },
-  momentInfo: { fontFamily: "Montserrat", marginBottom: 3 },
+  momentInfo: {
+    fontFamily: "Montserrat",
+    marginBottom: 3,
+    [theme.breakpoints.only("xs")]: { fontSize: ".7em" }
+  },
   moment: { marginTop: theme.spacing(3) },
-  title: { marginBottom: theme.spacing(2) },
+  title: {
+    marginBottom: theme.spacing(2),
+    [theme.breakpoints.only("xs")]: { fontSize: "1em" }
+  },
   body: {
     fontSize: 21,
-    lineHeight: 1.7
+    lineHeight: 1.7,
+    [theme.breakpoints.only("xs")]: { fontSize: ".8em" }
   },
   bold: {
     fontWeight: 600
@@ -56,7 +75,10 @@ const style = theme => ({
   ImagesContainer: {
     width: "100%",
     display: "flex",
-    flexFlow: "row wrap"
+    flexFlow: "row wrap",
+    [theme.breakpoints.only("xs")]: {
+      flexFlow: "column wrap"
+    }
   },
   imgWrapper: {
     height: 450,
@@ -74,6 +96,11 @@ const style = theme => ({
       maxWidth: "100%",
       flexShrink: 0,
       objectFit: "cover"
+    },
+    [theme.breakpoints.only("xs")]: {
+      height: "auto",
+      width: "100%",
+      marginRight: 0
     }
   }
 });
@@ -84,11 +111,12 @@ export default function Moment(props) {
   const classes = useStyle();
   const { couple, cUserEmail, data } = props;
   const refWrapper = useRef(null);
+  const refRing = useRef(null);
   const [lineHeight, setLineHeight] = useState(0);
   const [hover, setHover] = useState(false);
   const { loading } = props;
   const [images, setImages] = useState([]);
-
+  const [isMobile, setIsMobile] = useState(false);
   const [details, setDetails] = useState({
     id: "",
     title: "",
@@ -120,12 +148,21 @@ export default function Moment(props) {
     }
   }, []);
 
-  useEffect(() => {
-    const wrapperHeight = refWrapper.current.clientHeight;
-    const height = wrapperHeight - 43;
+  // useEffect(() => {
+  //   refWrapper.current.addEventListener("clientHeight", console.log("resize"));
+  //   const wrapperHeight = refWrapper.current.clientHeight;
+  //   const ringHeight = refRing.current.clientHeight;
+  //   const height = wrapperHeight - ringHeight - 1;
 
-    setLineHeight(height);
-  }, [details, images]);
+  //   setLineHeight(height);
+  // }, [details, images]);
+
+  useEffect(() => {
+    const width = window.innerWidth;
+    if (width < 600) {
+      setIsMobile(true);
+    } else setIsMobile(false);
+  }, [window.innerWidth]);
 
   const getAuthor = () => {
     const authorEmail = details.author;
@@ -149,8 +186,8 @@ export default function Moment(props) {
       onMouseLeave={() => setHover(false)}
     >
       <Box className={classes.timeliner}>
-        <Box className={classes.ring}></Box>
-        <Box className={classes.line} style={{ height: lineHeight }}></Box>
+        <Box className={classes.ring} ref={refRing}></Box>
+        <Box className={classes.line}></Box>
       </Box>
       <Box className={classes.content}>
         <Box className={classes.momentHeader}>
@@ -176,7 +213,7 @@ export default function Moment(props) {
               </React.Fragment>
             )}
           </Box>
-          <Box hidden={!hover}>
+          <Box hidden={!hover} hidden>
             <IconButton>
               <EditIcon />
             </IconButton>
@@ -207,12 +244,12 @@ export default function Moment(props) {
             </React.Fragment>
           ) : (
             <React.Fragment>
-              <Skeleton width={350} height={45} />
+              <Skeleton width={isMobile ? 150 : 350} height={45} />
               <Box mt={3}>
-                <Skeleton width={700} height={40} />
-                <Skeleton width={700} height={40} />
+                <Skeleton width={isMobile ? 100 : 700} height={40} />
+                <Skeleton width={isMobile ? 100 : 700} height={40} />
 
-                <Skeleton width={200} height={40} />
+                <Skeleton width={isMobile ? 50 : 200} height={40} />
               </Box>
             </React.Fragment>
           )}

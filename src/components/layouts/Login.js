@@ -57,7 +57,8 @@ const style = theme => ({
     width: "100%",
     height: "100vh",
     [theme.breakpoints.down("md")]: {
-      gridTemplateColumns: "1fr"
+      gridTemplateColumns: "1fr",
+      minHeight: 500
     }
   },
   content: {
@@ -68,7 +69,9 @@ const style = theme => ({
     flexFlow: "column wrap",
     justifyContent: "space-between",
     [theme.breakpoints.only("xs")]: {
-      padding: theme.spacing(2)
+      padding: theme.spacing(3),
+      paddingTop: theme.spacing(5),
+      paddingBottom: theme.spacing(5)
     }
   },
   logo: {
@@ -84,7 +87,7 @@ const style = theme => ({
     }
   },
   form: {
-    height: 220,
+    height: 100,
     display: "inherit",
     flexFlow: "inherit",
     justifyContent: "inherit"
@@ -175,27 +178,27 @@ export default function Login(props) {
             Start your story now
           </Typography>
         </Box>
-        <Box>
-          <Button
-            className={classes.googleBtn}
-            startIcon={<GoogleIcon />}
-            endIcon={googleDone ? <CheckCircleRoundedIcon /> : null}
-            disabled={googleDone || loading}
-            classes={{ label: classes.labelbtn }}
-            onClick={() => signInGoogle(handleLogin)}
-          >
-            {loading ? (
-              <CircularProgress color="secondary" />
-            ) : (
-              "Connect with Google"
-            )}
-          </Button>
-        </Box>
         <Box className={classes.form}>
           <Typography className={classes.loginTitle} variant="h6">
             Login to your account
           </Typography>
-          <TextField
+          <Box>
+            <Button
+              className={classes.googleBtn}
+              startIcon={<GoogleIcon />}
+              endIcon={googleDone ? <CheckCircleRoundedIcon /> : null}
+              disabled={googleDone || loading}
+              classes={{ label: classes.labelbtn }}
+              onClick={() => signInGoogle(handleLogin)}
+            >
+              {loading ? (
+                <CircularProgress color="secondary" />
+              ) : (
+                "Connect with Google"
+              )}
+            </Button>
+          </Box>
+          {/* <TextField
             label="Email"
             variant="standard"
             type="text"
@@ -234,7 +237,7 @@ export default function Login(props) {
             >
               Login
             </Button>
-          </Box>
+          </Box> */}
         </Box>
 
         <Box>
