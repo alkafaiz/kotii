@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-
+import { generateMomentId } from "./assets/js/utils";
 // Firebase App (the core Firebase SDK) is always required and must be listed first
 import * as firebase from "firebase/app";
 
@@ -60,37 +60,81 @@ export const createUser = ({ id, data }) => {
     });
 };
 
-export const createMoment = ({ id, data, images }) => {
-  firebase
-    .firestore()
-    .collection("couple")
-    .doc(id)
-    .collection("moment")
-    .add({
-      ...data,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(function(docRef) {
-      console.log("Document written with ID: ", docRef.id);
-      if (images.length !== 0) {
-        uploadImg({ id, momentId: docRef.id, images }, res => console.log(res));
+export const createMoment = ({ id, data, images }, callback) => {
+  const momentId = generateMomentId(id);
+
+  function doExecute() {
+    firebase
+      .firestore()
+      .collection("couple")
+      .doc(id)
+      .collection("moment")
+      .doc(momentId)
+      .set({
+        ...data,
+
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      })
+      .then(function() {
+        callback({ success: true });
+      })
+      .catch(function(error) {
+        callback({ success: false, error });
+      });
+  }
+
+  if (images.length !== 0) {
+    uploadImg({ id, momentId, images }, res => {
+      const { finish } = res;
+      if (finish) {
+        console.log("is upload images finish:", finish);
+        doExecute();
       }
-    })
-    .catch(function(error) {
-      console.error("Error adding document: ", error);
     });
+  } else {
+    console.log("upload without images");
+    doExecute();
+  }
 };
 
 export const uploadImg = ({ id, momentId, images }, callback) => {
-  images.forEach(data => {
+  images.forEach((data, index) => {
     //create storage ref
     const ref = firebase
       .storage()
       .ref(`momentsPhoto/${id}/${momentId}/${data.name}`);
     //upload file
-    ref.put(data).then(res => console.log("response upload", res));
+    const handleProgress = ref.put(data);
+    console.log("uploading image no:", index);
+    if (index === images.length - 1) {
+      console.log("monitoring last image upload");
+      handleProgress.on(
+        "state_changed",
+        function(snapshot) {
+          var progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log("Upload is " + progress + "% done");
+          switch (snapshot.state) {
+            case firebase.storage.TaskState.PAUSED: // or 'paused'
+              console.log("Upload is paused");
+              break;
+            case firebase.storage.TaskState.RUNNING: // or 'running'
+              console.log("Upload is running");
+              break;
+          }
+        },
+        function(error) {
+          // Handle unsuccessful uploads
+          console.log(error);
+        },
+        function() {
+          // Handle successful uploads on complete
+          // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+          callback({ finish: true });
+        }
+      );
+    }
   });
-  callback({ finish: true });
 };
 
 //todo: handle images newly posted moment, it should automatically shown. as per now, it loads to finish uploading first

@@ -138,7 +138,7 @@ export default function Main(props) {
             </defs>
           </svg>
           <Box>
-            <IconButton
+            {/* <IconButton
               className={classes.btnDashboard}
               onClick={() =>
                 firebase.signOut(res => {
@@ -150,7 +150,7 @@ export default function Main(props) {
               }
             >
               <TimelineIcon />
-            </IconButton>
+            </IconButton> */}
             <IconButton
               className={classes.btnDashboard}
               onClick={() =>

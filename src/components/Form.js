@@ -14,6 +14,8 @@ import PostAddIcon from "@material-ui/icons/PostAdd";
 import { createMoment, uploadImg, getImagesByMoment } from "../firebase";
 import ImageRoundedIcon from "@material-ui/icons/ImageRounded";
 import CancelRoundedIcon from "@material-ui/icons/CancelRounded";
+import { getDate } from "../assets/js/utils";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
 const style = theme => ({
   wrapper: {
@@ -88,33 +90,6 @@ const style = theme => ({
 
 const useStyle = makeStyles(style);
 
-function getDate() {
-  const currentDate = new Date();
-  const MonthName = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December"
-  ];
-  const date = currentDate.getDate();
-  const month = currentDate.getMonth(); //Be careful! January is 0 not 1
-  const year = currentDate.getFullYear();
-  const hour = currentDate.getHours();
-  const minute = currentDate.getMinutes();
-  const second = currentDate.getSeconds();
-
-  const dateString = `${date} ${MonthName[month]} ${year}`;
-  return dateString;
-}
-
 export default function Form(props) {
   const classes = useStyle();
   const inputImgRef = useRef();
@@ -124,6 +99,7 @@ export default function Form(props) {
   const { id, email } = props;
   const [uploadImages, setUploadImages] = useState([]);
   const [blobImgs, setBlobImgs] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   function clearForm() {
     setTitle("");
@@ -139,6 +115,7 @@ export default function Form(props) {
   }, [title, body]);
 
   const handleAdd = () => {
+    setLoading(true);
     const obj = {
       id,
       data: {
@@ -149,9 +126,17 @@ export default function Form(props) {
       },
       images: blobImgs
     };
-    createMoment(obj);
 
-    clearForm();
+    function handleRes(res) {
+      const { success, error } = res;
+      if (success) {
+        clearForm();
+        setLoading(false);
+      } else {
+        console.log("error occured during moment creation", error);
+      }
+    }
+    createMoment(obj, handleRes);
   };
 
   const handleImgChange = e => {
@@ -207,6 +192,7 @@ export default function Form(props) {
           variant="outlined"
           label="Title"
           fullWidth
+          disabled={loading}
           value={title}
           onChange={e => setTitle(e.currentTarget.value)}
         />
@@ -225,6 +211,7 @@ export default function Form(props) {
           rows="6"
           variant="outlined"
           fullWidth
+          disabled={loading}
           value={body}
           onChange={e => setBody(e.currentTarget.value)}
         />
@@ -261,6 +248,7 @@ export default function Form(props) {
             className={classes.button}
             variant="contained"
             disableElevation
+            disabled={loading}
             startIcon={<ImageRoundedIcon />}
           >
             Add Image
@@ -271,14 +259,14 @@ export default function Form(props) {
           className={classes.button}
           variant="contained"
           disableElevation
-          disabled={err}
+          disabled={err || loading}
           startIcon={<PostAddIcon />}
           onClick={e => {
             e.preventDefault();
             handleAdd();
           }}
         >
-          Post Moment
+          {loading ? <CircularProgress size={15} /> : "Post Moment"}
         </Button>
       </Box>
     </Box>

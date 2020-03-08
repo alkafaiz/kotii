@@ -101,6 +101,7 @@ export default function Moment(props) {
   function loadImg() {
     //process response
     function handleRes(res) {
+      console.log(res);
       setImages(prev => [...prev, res]);
     }
 
