@@ -147,15 +147,16 @@ export default function Login(props) {
       setEmail(email);
       refPw.current.focus();
     }
-    signOut();
+    if (localStorage.getItem("id")) {
+      props.history.push("/main");
+    }
   }, []);
 
   const handleLogin = res => {
-    setLoading(true);
     const { success, exist, authUser, coupleInfo, id } = res;
     //todo: should check of the user has matching partner in couple collection or not
+    localStorage.setItem("authUser", JSON.stringify(authUser));
     if (success && exist) {
-      localStorage.setItem("authUser", JSON.stringify(authUser));
       localStorage.setItem("id", id);
       localStorage.setItem("coupleInfo", JSON.stringify(coupleInfo));
       props.history.push("/main?login=success");
@@ -189,7 +190,10 @@ export default function Login(props) {
               endIcon={googleDone ? <CheckCircleRoundedIcon /> : null}
               disabled={googleDone || loading}
               classes={{ label: classes.labelbtn }}
-              onClick={() => signInGoogle(handleLogin)}
+              onClick={() => {
+                setLoading(true);
+                signInGoogle(handleLogin);
+              }}
             >
               {loading ? (
                 <CircularProgress color="secondary" />

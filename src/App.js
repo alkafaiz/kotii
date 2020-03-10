@@ -21,8 +21,7 @@ function App() {
   const handleAuth = res => {
     if (res === null || res === undefined) {
       setIsAuth(false);
-      console.log("current auth: false");
-    } else console.log("current auth: true", res);
+    }
   };
   getAuthState(handleAuth);
 
@@ -43,11 +42,11 @@ function App() {
             path={ROUTES.SIGNUP.path}
             component={ROUTES.SIGNUP.component}
           />
-          <PrivateRoute
-            path={ROUTES.LANDING.path}
-            component={() => <h3>Home</h3>}
+          <Route
+            path={ROUTES.SECRET_SIGNUP.path}
+            component={ROUTES.SECRET_SIGNUP.component}
           />
-          {/* <Redirect from={ROUTES.LANDING.path} to={ROUTES.LOGIN.path} /> */}
+          <Redirect from={ROUTES.LANDING.path} to={ROUTES.LOGIN.path} />
         </Switch>
       </Router>
     </ThemeProvider>

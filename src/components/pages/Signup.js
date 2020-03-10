@@ -81,10 +81,8 @@ const useStyle = makeStyles(style);
 
 function StepInvitation(props) {
   const { error, invCode } = props;
-  console.log(invCode);
   const [invCodes, setInvCodes] = invCode;
   const err = error[0] === 0 && error[1];
-  console.log("object", invCodes);
 
   return (
     <React.Fragment>
@@ -163,7 +161,12 @@ function StepPersonalDetails(error, detail) {
       qs.name !== undefined
     ) {
       setGoogleDone(true);
-      setDetails({ googleId: qs.id, name: qs.name });
+
+      setDetails({
+        googleId: qs.id,
+
+        name: qs.name
+      });
     }
   }, []);
 
@@ -273,8 +276,13 @@ export default function Signup(props) {
       qs.id !== undefined &&
       qs.name !== undefined
     ) {
+      const authUser = JSON.parse(localStorage.getItem("authUser"));
       setRef(qs.ref);
-      setDetails({ googleId: qs.id, name: qs.name });
+      setDetails({
+        googleId: qs.id,
+        email: authUser.user.email,
+        name: qs.name
+      });
     }
     setDidMount(true);
   }, []);
@@ -287,7 +295,6 @@ export default function Signup(props) {
         return new Promise(function(resolve, reject) {
           if (code !== "") {
             isInvCodeValid(code, res => {
-              console.log("signup isValid code", res);
               const { valid, onlyEmail, onlyName } = res;
               if (valid) {
                 setInvitor({ name: onlyName, email: onlyEmail });
@@ -337,30 +344,30 @@ export default function Signup(props) {
     }
   };
 
-  const handleResSignup = res => {
-    console.log(res);
-  };
-
   const handleNext = () => {
     if (validate()) {
       setActiveStep(prevActiveStep => prevActiveStep + 1);
       setError([activeStep, false]);
 
       if (activeStep === 0) {
-        localStorage.setItem("id", invCode);
+        localStorage.setItem("id", invCode.value);
       } else if (activeStep === 1) {
         mergeCouple(
           { code: invCode.value, email: details.email, name: details.name },
           res => {
             if (res.success) {
-              console.log("merged couple successfully");
+              const coupleInfo = [
+                { email: details.email, name: details.name },
+                { email: invitor.email, name: invitor.name }
+              ];
+              localStorage.setItem("coupleInfo", JSON.stringify(coupleInfo));
             } else console.log("merging failed");
           }
         );
       } else if (activeStep === 2) {
         setTimeout(() => {
           props.history.push("/main?ref=initial");
-        }, 3000);
+        }, 2000);
       }
     } else setError([activeStep, true]);
   };

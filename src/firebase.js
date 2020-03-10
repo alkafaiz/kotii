@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { generateMomentId } from "./assets/js/utils";
+import { generateMomentId, generateCoupleId } from "./assets/js/utils";
 // Firebase App (the core Firebase SDK) is always required and must be listed first
 import * as firebase from "firebase/app";
 
@@ -87,12 +87,10 @@ export const createMoment = ({ id, data, images }, callback) => {
     uploadImg({ id, momentId, images }, res => {
       const { finish } = res;
       if (finish) {
-        console.log("is upload images finish:", finish);
         doExecute();
       }
     });
   } else {
-    console.log("upload without images");
     doExecute();
   }
 };
@@ -105,9 +103,7 @@ export const uploadImg = ({ id, momentId, images }, callback) => {
       .ref(`momentsPhoto/${id}/${momentId}/${data.name}`);
     //upload file
     const handleProgress = ref.put(data);
-    console.log("uploading image no:", index);
     if (index === images.length - 1) {
-      console.log("monitoring last image upload");
       handleProgress.on(
         "state_changed",
         function(snapshot) {
@@ -151,20 +147,9 @@ export function getImagesByMoment(
   storageRef
     .listAll()
     .then(function(res) {
-      // res.prefixes.forEach(function(folderRef) {
-      //   console.log("prefixes", folderRef);
-      // });
-      // res.items[0].getDownloadURL(function(url) {
-      //   callback(url);
-      // });
       res.items.forEach(function(itemRef) {
         itemRef.getDownloadURL().then(url => callback(url));
       });
-      console.log(
-        "searching images for " + momentId + " and ",
-        res.items.length,
-        " found"
-      );
     })
     .catch(err => console.log(err));
 }
@@ -180,8 +165,6 @@ export const getMoment = (id, cb = () => {}) => {
     .then(function(querySnapshot) {
       const moments = [];
       querySnapshot.forEach(function(doc) {
-        // doc.data() is never undefined for query doc snapshots
-        //console.log(doc.id, " => ", doc.data());
         moments.push({ ...doc.data(), id: doc.id });
       });
       cb(moments);
@@ -220,6 +203,59 @@ export function useMoments(id) {
 //createUser({ id: "1111", data: coupleObj });
 //createMoment({ id: "1111", data: momentObj });
 
+//todo: create function to create user type 1 (initializing couple)
+export function signupInitialUser(callback) {
+  const coupleId = generateCoupleId();
+
+  function initializeUser(email, name, cb) {
+    firebase
+      .firestore()
+      .collection("couple")
+      .doc(coupleId)
+      .set({
+        coupleInfo: [
+          {
+            email,
+            name
+          }
+        ]
+      })
+      .then(cb());
+  }
+
+  //signup via firebase auth
+  var provider = new firebase.auth.GoogleAuthProvider();
+  firebase
+    .auth()
+    .signInWithPopup(provider)
+    .then(function(result) {
+      const email = result.user.email;
+      const name = result.user.displayName;
+      isUserExist({ email, name }, res => {
+        const { exist, id, coupleInfo } = res;
+        if (!exist) {
+          console.log("creating user");
+          //initialize firestore
+          initializeUser(email, name, () => {
+            //return
+            callback({
+              success: true,
+              authUser: result,
+              coupleInfo: [{ email, name }],
+              id: coupleId
+            });
+          });
+        } else {
+          signOut();
+          callback({ success: false });
+        }
+      });
+    })
+    .catch(function(error) {
+      console.log(error);
+    });
+}
+
 export const signInGoogle = cb => {
   var provider = new firebase.auth.GoogleAuthProvider();
   firebase
@@ -228,10 +264,8 @@ export const signInGoogle = cb => {
     .then(function(result) {
       const email = result.user.email;
       const name = result.user.displayName;
-      console.log(result);
       isUserExist({ email, name }, res => {
         const { exist, id, coupleInfo } = res;
-        console.log(res);
         if (exist) {
           cb({ success: true, exist, authUser: result, coupleInfo, id });
         } else cb({ success: false, exist, authUser: result });
@@ -253,7 +287,7 @@ export const signupEmailPassword = (data, cb) => {
     });
 };
 
-export const getAuthState = cb => {
+export const getAuthState = (cb = () => {}) => {
   firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
     } else {
@@ -280,75 +314,6 @@ export const getCurrentUser = cb => {
 };
 
 var citiesRef = firebase.firestore().collection("cities");
-// citiesRef.doc("SF").set({
-//   name: "San Francisco",
-//   state: "CA",
-//   country: "USA",
-//   capital: false,
-//   population: 860000,
-//   regions: ["west_coast", "norcal"]
-// });
-// citiesRef.doc("LA").set({
-//   name: "Los Angeles",
-//   state: "CA",
-//   country: "USA",
-//   capital: false,
-//   population: 3900000,
-//   regions: ["west_coast", "socal"]
-// });
-// citiesRef.doc("DC").set({
-//   name: "Washington, D.C.",
-//   state: null,
-//   country: "USA",
-//   capital: true,
-//   population: 680000,
-//   regions: ["east_coast"]
-// });
-// citiesRef.doc("TOK").set({
-//   name: "Tokyo",
-//   state: null,
-//   country: "Japan",
-//   capital: true,
-//   population: 9000000,
-//   regions: ["kanto", "honshu"]
-// });
-// citiesRef.doc("BJ").set({
-//   name: "Beijing",
-//   state: null,
-//   country: "China",
-//   capital: true,
-//   population: 21500000,
-//   regions: ["jingjinji", "hebei"]
-// });
-
-// var docRef = firebase
-//   .firestore()
-//   .collection("cities")
-//   .doc("SF");
-
-// docRef
-//   .get()
-//   .then(function(doc) {
-//     if (doc.exists) {
-//       console.log("Document data:", doc.data());
-//     } else {
-//       // doc.data() will be undefined in this case
-//       console.log("No such document!");
-//     }
-//   })
-//   .catch(function(error) {
-//     console.log("Error getting document:", error);
-//   });
-
-// firebase
-//   .firestore()
-//   .collection("couple")
-//   .get()
-//   .then(querySnapshot => {
-//     querySnapshot.forEach(doc => {
-//       console.log(`${doc.id} => ${JSON.stringify(doc.data())}`);
-//     });
-//   });
 
 export const getAuthCouple = (email, cb) => {
   firebase
@@ -381,23 +346,9 @@ export const isUserExist = ({ email, name }, cb) => {
       } else {
         cb({ exist });
       }
-      // if (!querySnapshot.empty) {
-      //   console.log("user1", querySnapshot.empty);
-      // }
-      // if (!querySnapshot.empty) {
-      //   querySnapshot.forEach(function(doc) {
-      //     cb(doc.exists);
-      //   });
-      // }
     });
 };
 
-//testing
-// isUserExist({ email: "faiz@checknow.org", name: "Faiz" }, res =>
-//   console.log(res)
-// );
-
-//todo: create fucntion to check if the user is alone
 export const getCoupleStatus = ({ email, name }, cb) => {
   firebase
     .firestore()
@@ -407,7 +358,6 @@ export const getCoupleStatus = ({ email, name }, cb) => {
     .then(querySnapshot => {});
 };
 
-//function to check if the inv code valid, can also to check if the current user is having partner or not
 export const isInvCodeValid = (code, cb) => {
   let response = false;
   firebase
@@ -428,10 +378,6 @@ export const isInvCodeValid = (code, cb) => {
     });
 };
 
-//testing
-//isInvCodeValid("111a", res => console.log(res));
-
-//todo: create function to merge exisiting user email in couple collection
 export const mergeCouple = ({ code, email, name }, cb) => {
   firebase
     .firestore()
@@ -447,10 +393,3 @@ export const mergeCouple = ({ code, email, name }, cb) => {
       console.error("Error adding document: ", error);
     });
 };
-
-//testing
-// mergeCouple({ code: "1112", email: "faw@gmail.com", name: "Faw" }, res =>
-//   console.log(res)
-// );
-
-//todo: create function to merge userDB and userAuth on login

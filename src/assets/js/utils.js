@@ -1,3 +1,5 @@
+import shortid from "shortid";
+
 export function getDate() {
   const currentDate = new Date();
   const MonthName = [
@@ -37,4 +39,8 @@ export function generateMomentId(coupleId) {
 
   const Id = coupleId + year + month + date + hour + minute + second;
   return Id;
+}
+
+export function generateCoupleId() {
+  return shortid.generate();
 }

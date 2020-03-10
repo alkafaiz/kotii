@@ -2,6 +2,8 @@ import Login from "./components/layouts/Login";
 import Main from "./components/layouts/Main";
 import Signup from "./components/pages/Signup";
 import Invite from "./components/pages/Invite";
+import SecretSignup from "./components/pages/SecretSignup";
+
 export const LANDING = {
   path: "/"
 };
@@ -24,4 +26,9 @@ export const MAIN = {
 export const INVITE = {
   path: "/invite",
   component: Invite
+};
+
+export const SECRET_SIGNUP = {
+  path: "/secret-signup",
+  component: SecretSignup
 };

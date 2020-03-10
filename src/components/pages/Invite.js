@@ -78,7 +78,7 @@ export default function Invite() {
             <OutlinedInput
               id="standard-adornment-password"
               type="text"
-              value="1111"
+              value={localStorage.getItem("id")}
               readOnly
               endAdornment={
                 <InputAdornment position="end">
@@ -100,7 +100,9 @@ export default function Invite() {
             <OutlinedInput
               id="standard-adornment-password"
               type="text"
-              value="www.kotii.io/invite?ref=unite&code=1111"
+              value={`kotii.alkafaiz.com/signup?invitationCode=${localStorage.getItem(
+                "id"
+              )}`}
               readOnly
               endAdornment={
                 <InputAdornment position="end">

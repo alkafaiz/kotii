@@ -82,10 +82,9 @@ export default function Main(props) {
   const GenerateMoments = () => {
     return moments !== undefined
       ? moments.map((data, index) => {
-          console.log(data.id, index);
-          //continue: pass author email then show name
           return (
             <Moment
+              loading={false}
               key={data.id}
               data={data}
               id={data.id}
@@ -170,7 +169,7 @@ export default function Main(props) {
               className={classes.btnDashboard}
               onClick={() =>
                 firebase.signOut(res => {
-                  localStorage.removeItem("authUser");
+                  localStorage.clear();
                   props.history.push("/login");
                 })
               }
@@ -197,7 +196,7 @@ export default function Main(props) {
           )}
         </Box>
         <MomentCreator id={props.cCouple.id} email={props.cUser.user.email} />
-        {moments.length === 0 && <Moment loading={true} />}
+        {moments.length === 0 ? <Moment loading={true} /> : ""}
         {!loading && GenerateMoments()}
       </Container>
     </React.Fragment>

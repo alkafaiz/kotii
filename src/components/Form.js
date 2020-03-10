@@ -185,7 +185,6 @@ export default function Form(props) {
     if (file) {
       const rawFile = e.target.files[0];
       const image = URL.createObjectURL(rawFile);
-      console.log("imput image ref", e.target.files[0]);
       setUploadImages(ps => [...ps, image]);
       setBlobImgs(ps => [...ps, rawFile]);
     }

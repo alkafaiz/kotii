@@ -114,7 +114,7 @@ export default function Moment(props) {
   const refRing = useRef(null);
   const [lineHeight, setLineHeight] = useState(0);
   const [hover, setHover] = useState(false);
-  const { loading } = props;
+  const { loading } = props || false;
   const [images, setImages] = useState([]);
   const [isMobile, setIsMobile] = useState(false);
   const [details, setDetails] = useState({
@@ -129,7 +129,6 @@ export default function Moment(props) {
   function loadImg() {
     //process response
     function handleRes(res) {
-      console.log(res);
       setImages(prev => [...prev, res]);
     }
 
@@ -148,15 +147,6 @@ export default function Moment(props) {
     }
   }, []);
 
-  // useEffect(() => {
-  //   refWrapper.current.addEventListener("clientHeight", console.log("resize"));
-  //   const wrapperHeight = refWrapper.current.clientHeight;
-  //   const ringHeight = refRing.current.clientHeight;
-  //   const height = wrapperHeight - ringHeight - 1;
-
-  //   setLineHeight(height);
-  // }, [details, images]);
-
   useEffect(() => {
     const width = window.innerWidth;
     if (width < 600) {
@@ -165,8 +155,9 @@ export default function Moment(props) {
   }, [window.innerWidth]);
 
   const getAuthor = () => {
-    const authorEmail = details.author;
+    const authorEmail = data.author;
     let name = "";
+
     if (authorEmail === cUserEmail) {
       name += "Me";
     } else {
