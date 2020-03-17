@@ -16,6 +16,7 @@ import ImageRoundedIcon from "@material-ui/icons/ImageRounded";
 import CancelRoundedIcon from "@material-ui/icons/CancelRounded";
 import { getDate } from "../assets/js/utils";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import { encrypt } from "../assets/js/encryption";
 
 const style = theme => ({
   wrapper: {
@@ -161,7 +162,7 @@ export default function Form(props) {
       data: {
         date: getDate(),
         title,
-        body,
+        body: encrypt(body),
         author: email
       },
       images: blobImgs

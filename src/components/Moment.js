@@ -4,6 +4,7 @@ import classnames from "classnames";
 import { Box, Typography, IconButton } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import Skeleton from "@material-ui/lab/Skeleton";
+import { decrypt } from "../assets/js/encryption";
 
 import { getImagesByMoment } from "../firebase";
 
@@ -230,7 +231,7 @@ export default function Moment(props) {
               <Typography
                 variant="body1"
                 className={classes.body}
-                children={details.body}
+                children={decrypt(details.body)}
               />
             </React.Fragment>
           ) : (
