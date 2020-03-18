@@ -152,19 +152,6 @@ export default function Main(props) {
             </defs>
           </svg>
           <Box>
-            {/* <IconButton
-              className={classes.btnDashboard}
-              onClick={() =>
-                firebase.signOut(res => {
-                  localStorage.removeItem("authUser");
-                  localStorage.removeItem("id");
-                  localStorage.removeItem("coupleInfo");
-                  props.history.push("/login");
-                })
-              }
-            >
-              <TimelineIcon />
-            </IconButton> */}
             <IconButton
               className={classes.btnDashboard}
               onClick={() =>
@@ -196,8 +183,18 @@ export default function Main(props) {
           )}
         </Box>
         <MomentCreator id={props.cCouple.id} email={props.cUser.user.email} />
-        {moments.length === 0 ? <Moment loading={true} /> : ""}
-        {!loading && GenerateMoments()}
+
+        {loading ? (
+          <Moment loading={true} />
+        ) : moments.length !== 0 ? (
+          GenerateMoments()
+        ) : (
+          <Box my={4} textAlign="center">
+            <Typography variant="subtitle1">
+              You have not created a moment
+            </Typography>
+          </Box>
+        )}
       </Container>
     </React.Fragment>
   );

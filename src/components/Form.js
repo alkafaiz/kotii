@@ -181,6 +181,7 @@ export default function Form(props) {
   };
 
   const handleImgChange = e => {
+    //edit here to handle multiple selection images
     const file = inputImgRef.current.files[0];
     const fr = new FileReader();
     if (file) {
