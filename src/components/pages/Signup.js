@@ -270,6 +270,7 @@ export default function Signup(props) {
 
   useEffect(() => {
     const qs = querystring.parse(props.history.location.search);
+    console.log(qs.invitationCode);
     if (
       qs.new !== undefined &&
       qs.ref !== undefined &&
@@ -283,6 +284,8 @@ export default function Signup(props) {
         email: authUser.user.email,
         name: qs.name
       });
+    } else if (qs.invitationCode !== undefined) {
+      setInvCode({ value: qs.invitationCode, valid: true });
     }
     setDidMount(true);
   }, []);
