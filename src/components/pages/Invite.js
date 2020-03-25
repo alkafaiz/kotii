@@ -60,7 +60,7 @@ const style = theme => ({
     marginTop: theme.spacing(2)
   },
   Snackbar: {
-    padding: theme.spacing(1),
+    padding: theme.spacing(2),
     paddingLeft: theme.spacing(2),
     color: theme.palette.common.white,
     backgroundColor: theme.palette.success.main,

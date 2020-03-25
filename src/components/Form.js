@@ -51,10 +51,16 @@ const style = theme => ({
     color: "white",
     borderRadius: 50,
     fontFamily: "Montserrat",
+    "&:hover, &:focus": {
+      backgroundColor: "#212121"
+    },
     [theme.breakpoints.only("xs")]: {
       fontSize: ".7em",
       "&:not(last-child)": {
         marginBottom: theme.spacing(1)
+      },
+      "&:hover, &:focus": {
+        backgroundColor: "black"
       }
     }
   },

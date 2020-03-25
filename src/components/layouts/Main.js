@@ -62,19 +62,19 @@ const useStyle = makeStyles(style);
 export default function Main(props) {
   const classes = useStyle();
   const { cUser, cCouple } = props;
-  const moments = firebase.useMoments(localStorage.getItem("id"));
+  const [moments, loading] = firebase.useMoments(localStorage.getItem("id"));
 
-  const [loading, setLoading] = useState(true);
+  //const [loading, setLoading] = useState(true);
   const [didMount, setDidMount] = useState(false);
 
   useEffect(() => {
     setDidMount(true);
-    setLoading(false);
   }, []);
 
   useEffect(() => {
     if (didMount) {
       if (moments.length !== 0) {
+        //setLoading(false);
       }
     }
   }, [moments]);
@@ -183,11 +183,10 @@ export default function Main(props) {
           )}
         </Box>
         <MomentCreator id={props.cCouple.id} email={props.cUser.user.email} />
-
-        {loading ? (
-          <Moment loading={true} />
-        ) : moments.length !== 0 ? (
+        {moments.length !== 0 ? (
           GenerateMoments()
+        ) : loading ? (
+          <Moment loading={true} />
         ) : (
           <Box my={4} textAlign="center">
             <Typography variant="subtitle1">

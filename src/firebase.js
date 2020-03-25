@@ -175,6 +175,7 @@ export const getMoment = (id, cb = () => {}) => {
 //custom hooks for collecting moments from firebase
 export function useMoments(id) {
   const [moments, setMoment] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = firebase
@@ -189,6 +190,7 @@ export function useMoments(id) {
           ...doc.data()
         }));
         setMoment(newMoments);
+        setLoading(false);
       });
     return () => {
       unsubscribe();
@@ -196,7 +198,7 @@ export function useMoments(id) {
     };
   }, []);
 
-  return moments;
+  return [moments, loading];
 }
 
 //testing create user
