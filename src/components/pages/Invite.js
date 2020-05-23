@@ -11,7 +11,6 @@ import {
   OutlinedInput,
   Snackbar
 } from "@material-ui/core";
-import Alert from "@material-ui/lab/Alert";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import CheckRoundedIcon from "@material-ui/icons/CheckCircleRounded";
 
@@ -129,7 +128,10 @@ export default function Invite() {
       <Box className={classes.wrapper}>
         <Paper className={classes.paper} variant="outlined" elevation={0}>
           <Typography variant="h4" gutterBottom>
-            Great! You're ready to share moments together 👫
+            Great! You're ready to share moments together{" "}
+            <span role="img" ariaLabel="couple">
+              👫
+            </span>
           </Typography>
           <Box className={classes.invCodeContainer} mt={2} mb={1}>
             <Typography gutterBottom variant="caption">

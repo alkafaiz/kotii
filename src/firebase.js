@@ -26,26 +26,6 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 firebase.analytics();
 
-const coupleObj = {
-  User1: {
-    email: "faiz@gmail.com",
-    name: "faiz"
-  }
-};
-const coupleObj2 = {
-  User2: {
-    email: "ndud@gmail.com",
-    name: "ndud"
-  }
-};
-
-const momentObj = {
-  author: 1,
-  body: "tessss",
-  title: "first one",
-  date: "10 January 2012"
-};
-
 export const createUser = ({ id, data }) => {
   firebase
     .firestore()
@@ -116,6 +96,8 @@ export const uploadImg = ({ id, momentId, images }, callback) => {
               break;
             case firebase.storage.TaskState.RUNNING: // or 'running'
               console.log("Upload is running");
+              break;
+            default:
               break;
           }
         },
@@ -196,7 +178,7 @@ export function useMoments(id) {
       unsubscribe();
       console.log("unsubscribe");
     };
-  }, []);
+  }, [id]);
 
   return [moments, loading];
 }
@@ -234,7 +216,8 @@ export function signupInitialUser(callback) {
       const email = result.user.email;
       const name = result.user.displayName;
       isUserExist({ email, name }, res => {
-        const { exist, id, coupleInfo } = res;
+        const { exist } = res;
+        //const { id, coupleInfo } = res;
         if (!exist) {
           console.log("creating user");
           //initialize firestore
@@ -315,8 +298,6 @@ export const getCurrentUser = cb => {
   cb(user);
 };
 
-var citiesRef = firebase.firestore().collection("cities");
-
 export const getAuthCouple = (email, cb) => {
   firebase
     .firestore()
@@ -361,7 +342,6 @@ export const getCoupleStatus = ({ email, name }, cb) => {
 };
 
 export const isInvCodeValid = (code, cb) => {
-  let response = false;
   firebase
     .firestore()
     .collection("couple")

@@ -5,7 +5,7 @@ import { Box, Typography, IconButton } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import Skeleton from "@material-ui/lab/Skeleton";
 import { decrypt } from "../assets/js/encryption";
-
+import { getTimestampString } from "../assets/js/utils";
 import { getImagesByMoment } from "../firebase";
 
 const style = theme => ({
@@ -113,7 +113,6 @@ export default function Moment(props) {
   const { couple, cUserEmail, data } = props;
   const refWrapper = useRef(null);
   const refRing = useRef(null);
-  const [lineHeight, setLineHeight] = useState(0);
   const [hover, setHover] = useState(false);
   const { loading } = props || false;
   const [images, setImages] = useState([]);
@@ -189,7 +188,7 @@ export default function Moment(props) {
                 <Typography
                   className={classes.momentInfo}
                   variant="body2"
-                  children={details.date}
+                  children={getTimestampString(details.date)}
                 />
                 <Typography
                   className={classnames(classes.momentInfo, classes.bold)}
@@ -240,7 +239,9 @@ export default function Moment(props) {
               <Box mt={3}>
                 <Skeleton width={isMobile ? 100 : 700} height={40} />
                 <Skeleton width={isMobile ? 100 : 700} height={40} />
-
+                <Skeleton width={isMobile ? 50 : 200} height={40} />
+                <Skeleton width={isMobile ? 100 : 700} height={40} />
+                <Skeleton width={isMobile ? 100 : 700} height={40} />
                 <Skeleton width={isMobile ? 50 : 200} height={40} />
               </Box>
             </React.Fragment>

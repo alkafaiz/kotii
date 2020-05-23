@@ -1,18 +1,6 @@
 import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import {
-  Box,
-  Paper,
-  Typography,
-  Button,
-  FormControl,
-  Input,
-  InputLabel,
-  InputAdornment,
-  IconButton,
-  OutlinedInput
-} from "@material-ui/core";
-import FileCopyIcon from "@material-ui/icons/FileCopy";
+import { Box, Paper, Typography, Button } from "@material-ui/core";
 import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { signupInitialUser } from "../../firebase";

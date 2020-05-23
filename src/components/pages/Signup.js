@@ -7,19 +7,9 @@ import StepContent from "@material-ui/core/StepContent";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import Box from "@material-ui/core/Box";
-import Alert from "@material-ui/lab/Alert";
 import Typography from "@material-ui/core/Typography";
 import { TextField, Divider } from "@material-ui/core";
-import FacebookLogin from "react-facebook-login";
-import { GoogleLogin } from "react-google-login";
-import classnames from "classnames";
-import {
-  signInGoogle,
-  signupEmailPassword,
-  getCurrentUser,
-  isInvCodeValid,
-  mergeCouple
-} from "../../firebase";
+import { signInGoogle, isInvCodeValid, mergeCouple } from "../../firebase";
 import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
 import { useHistory } from "react-router-dom";
 import querystring from "query-string";
@@ -142,15 +132,6 @@ function StepPersonalDetails(error, detail) {
   const [details, setDetails] = detail;
 
   const [googleDone, setGoogleDone] = useState(false);
-  const err = error[0] === 1 && error[1];
-  const [confirmPw, setConfirmPw] = useState("");
-  const [match, setMatch] = useState(false);
-
-  useEffect(() => {
-    if (confirmPw !== "") {
-      setMatch(details.password === confirmPw);
-    } else setMatch(true);
-  }, [confirmPw]);
 
   useEffect(() => {
     const qs = querystring.parse(history.location.search);
@@ -171,7 +152,7 @@ function StepPersonalDetails(error, detail) {
   }, []);
 
   const handleResponseGoogle = res => {
-    const { success, exist, authUser, coupleInfo, id } = res;
+    const { success, exist, authUser, coupleInfo } = res;
     localStorage.setItem("authUser", JSON.stringify(authUser));
     //if user has already exist => redirect to main with all the details
     //if user has not been coupled => merge to db then store to local
@@ -248,7 +229,6 @@ function getStepContent(step, error, invCode, details, withRef, invitor) {
   }
 }
 
-const secretIVCODE = "1111";
 export default function Signup(props) {
   const classes = useStyle();
   const [activeStep, setActiveStep] = React.useState(0);

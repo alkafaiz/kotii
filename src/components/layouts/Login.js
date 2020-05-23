@@ -1,27 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  InputAdornment,
-  FormControl,
-  InputLabel,
-  Input,
-  IconButton
-} from "@material-ui/core";
-import Visibility from "@material-ui/icons/Visibility";
-import VisibilityOff from "@material-ui/icons/VisibilityOff";
+import { Box, Typography, Button } from "@material-ui/core";
 import Photo from "../../assets/img/img-login.jpg";
 import querystring from "query-string";
 import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
-import {
-  signInGoogle,
-  isUserExist,
-  getAuthCouple,
-  signOut
-} from "../../firebase";
+import { signInGoogle } from "../../firebase";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
 const GoogleIcon = () => (
@@ -113,44 +96,17 @@ const style = theme => ({
 const useStyle = makeStyles(style);
 
 export default function Login(props) {
-  const refPw = useRef();
+  const { history } = props;
   const [loading, setLoading] = useState(false);
-  const [values, setValues] = React.useState({
-    amount: "",
-    password: "",
-    weight: "",
-    weightRange: "",
-    showPassword: false
-  });
 
   const classes = useStyle();
   const [googleDone, setGoogleDone] = useState(false);
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleChange = prop => event => {
-    setValues({ ...values, [prop]: event.target.value });
-  };
-
-  const handleClickShowPassword = () => {
-    setValues({ ...values, showPassword: !values.showPassword });
-  };
-
-  const handleMouseDownPassword = event => {
-    event.preventDefault();
-  };
-
   useEffect(() => {
-    const { exist, email } = querystring.parse(props.location.search);
-    if (exist === "true" && email !== undefined) {
-      setEmail(email);
-      refPw.current.focus();
-    }
     if (localStorage.getItem("id")) {
-      props.history.push("/main");
+      history.push("/main");
     }
-  }, []);
+  }, [history]);
 
   const handleLogin = res => {
     const { success, exist, authUser, coupleInfo, id } = res;
@@ -193,6 +149,7 @@ export default function Login(props) {
               onClick={() => {
                 setLoading(true);
                 signInGoogle(handleLogin);
+                setGoogleDone(true);
               }}
             >
               {loading ? (

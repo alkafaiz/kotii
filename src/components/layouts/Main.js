@@ -7,12 +7,11 @@ import {
   Container,
   Link
 } from "@material-ui/core";
-import DashboardIcon from "@material-ui/icons/Dashboard";
 import Moment from "../Moment";
 import MomentCreator from "../Form";
 import * as firebase from "../../firebase";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
-import TimelineIcon from "@material-ui/icons/Timeline";
+import { calculateDays } from "../../assets/js/utils";
 
 const style = theme => ({
   logo: {
@@ -77,7 +76,7 @@ export default function Main(props) {
         //setLoading(false);
       }
     }
-  }, [moments]);
+  }, [moments, didMount]);
 
   const GenerateMoments = () => {
     return moments !== undefined
@@ -110,6 +109,8 @@ export default function Main(props) {
 
   return (
     <React.Fragment>
+      <MomentCreator id={props.cCouple.id} email={props.cUser.user.email} />
+
       <Box className={classes.appbarWrapper}>
         <Container className={classes.appbar}>
           <Typography className={classes.logo} variant="h4">
@@ -167,7 +168,7 @@ export default function Main(props) {
         </Container>
       </Box>
       <Container className={classes.momentWrapper}>
-        <Box p={{ xs: 1, sm: 4 }}>
+        <Box p={{ xs: 1, sm: 4 }} marginBottom={2}>
           {cCouple.couple.length === 1 ? (
             <Typography variant="h5" className={classes.textCenter}>
               Why are you alone here?
@@ -177,12 +178,15 @@ export default function Main(props) {
               </Link>
             </Typography>
           ) : (
-            <Typography variant="h6" className={classes.textCenter}>
-              You are here sharing moments with {getPartnerName()}
+            <Typography variant="subtitle2" className={classes.textCenter}>
+              You've been here sharing moments with {getPartnerName()} for{" "}
+              <span style={{ fontWeight: "bold" }}>
+                {calculateDays(2019, 9, 9)} days
+              </span>{" "}
+              and counting
             </Typography>
           )}
         </Box>
-        <MomentCreator id={props.cCouple.id} email={props.cUser.user.email} />
         {moments.length !== 0 ? (
           GenerateMoments()
         ) : loading ? (

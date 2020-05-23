@@ -1,34 +1,38 @@
 import React, { useState, useEffect, useRef } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import classnames from "classnames";
 import {
   Box,
   Typography,
   TextField,
   Button,
   Collapse,
-  Paper,
-  IconButton
+  IconButton,
+  Fab,
+  Modal,
+  Backdrop,
+  Fade
 } from "@material-ui/core";
 import PostAddIcon from "@material-ui/icons/PostAdd";
-import { createMoment, uploadImg, getImagesByMoment } from "../firebase";
+import { createMoment } from "../firebase";
 import ImageRoundedIcon from "@material-ui/icons/ImageRounded";
 import CancelRoundedIcon from "@material-ui/icons/CancelRounded";
 import { getDate } from "../assets/js/utils";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { encrypt } from "../assets/js/encryption";
+import AddIcon from "@material-ui/icons/AddRounded";
 
 const style = theme => ({
   wrapper: {
     marginLeft: theme.spacing(5),
     marginRight: theme.spacing(5),
-    border: "1px solid black",
     borderRadius: 6,
     padding: theme.spacing(5),
-    marginBottom: theme.spacing(9),
+    backgroundColor: "white",
+    overflowY: "scroll",
+    maxHeight: "90vh",
     [theme.breakpoints.only("xs")]: {
       margin: 0,
-      marginBottom: theme.spacing(7),
+      //marginBottom: theme.spacing(7),
       padding: theme.spacing(1)
     }
   },
@@ -132,6 +136,12 @@ const style = theme => ({
     [theme.breakpoints.only("xs")]: {
       fontSize: "1em"
     }
+  },
+  fab: {
+    position: "fixed",
+    bottom: theme.spacing(2),
+    right: theme.spacing(2),
+    zIndex: 999
   }
 });
 
@@ -147,6 +157,10 @@ export default function Form(props) {
   const [uploadImages, setUploadImages] = useState([]);
   const [blobImgs, setBlobImgs] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isModalOpen, setModalOpen] = useState(false);
+
+  const handleOpenModal = () => setModalOpen(true);
+  const handleCloseModal = () => setModalOpen(false);
 
   function clearForm() {
     setTitle("");
@@ -182,6 +196,7 @@ export default function Form(props) {
       } else {
         console.log("error occured during moment creation", error);
       }
+      handleCloseModal();
     }
     createMoment(obj, handleRes);
   };
@@ -189,7 +204,6 @@ export default function Form(props) {
   const handleImgChange = e => {
     //edit here to handle multiple selection images
     const file = inputImgRef.current.files[0];
-    const fr = new FileReader();
     if (file) {
       const rawFile = e.target.files[0];
       const image = URL.createObjectURL(rawFile);
@@ -219,103 +233,147 @@ export default function Form(props) {
   };
 
   return (
-    <Box className={classes.wrapper}>
-      <Typography variant="h4" className={classes.responsiveH4}>
-        Hey! 👋 Neither you nor your partner have created moment today,
-      </Typography>
-      <Box mt={2}>
-        <Typography variant="h5" className={classes.responsiveH5}>
-          Let's create one before you forgeet! 😄
-        </Typography>
-      </Box>
-      <Box mt={3}>
-        <TextField
-          InputProps={{
-            classes: {
-              input: classes.input
-            }
-          }}
-          InputLabelProps={{ classes: { root: classes.label } }}
-          variant="outlined"
-          label="Title"
-          fullWidth
-          disabled={loading}
-          value={title}
-          onChange={e => setTitle(e.currentTarget.value)}
-        />
-      </Box>
-      <Box mt={{ xs: 2, sm: 3 }} mb={2}>
-        <TextField
-          InputProps={{
-            classes: {
-              input: classes.input
-            }
-          }}
-          InputLabelProps={{ classes: { root: classes.label } }}
-          id="outlined-multiline-static"
-          label="Body"
-          multiline
-          rows="6"
-          variant="outlined"
-          fullWidth
-          disabled={loading}
-          value={body}
-          onChange={e => setBody(e.currentTarget.value)}
-        />
-      </Box>
+    <>
+      <Fab
+        className={classes.fab}
+        size="medium"
+        color="secondary"
+        aria-label="add"
+        onClick={handleOpenModal}
+        disabled={isModalOpen}
+      >
+        <AddIcon />
+      </Fab>
+      <ModalComponent isOpen={isModalOpen} handleClose={handleCloseModal}>
+        <Box className={classes.wrapper}>
+          <Typography variant="h4" className={classes.responsiveH4}>
+            Hey! 👋 Neither you nor your partner have created moment today,
+          </Typography>
+          <Box mt={2}>
+            <Typography variant="h5" className={classes.responsiveH5}>
+              Let's create one before you forgeet! 😄
+            </Typography>
+          </Box>
+          <Box mt={3}>
+            <TextField
+              InputProps={{
+                classes: {
+                  input: classes.input
+                }
+              }}
+              InputLabelProps={{ classes: { root: classes.label } }}
+              variant="outlined"
+              label="Title"
+              fullWidth
+              disabled={loading}
+              value={title}
+              onChange={e => setTitle(e.currentTarget.value)}
+            />
+          </Box>
+          <Box mt={{ xs: 2, sm: 3 }} mb={2}>
+            <TextField
+              InputProps={{
+                classes: {
+                  input: classes.input
+                }
+              }}
+              InputLabelProps={{ classes: { root: classes.label } }}
+              id="outlined-multiline-static"
+              label="Body"
+              multiline
+              rows="6"
+              variant="outlined"
+              fullWidth
+              disabled={loading}
+              value={body}
+              onChange={e => setBody(e.currentTarget.value)}
+            />
+          </Box>
 
-      <Collapse in={uploadImages.length !== 0}>
-        <Box className={classes.imageContainer}>
-          {uploadImages.length !== 0
-            ? uploadImages.map((data, index) => {
-                return (
-                  <ImageItemUpload
-                    key={index}
-                    img={data}
-                    raw={blobImgs[index]}
-                  />
-                );
-              })
-            : ""}
+          <Collapse in={uploadImages.length !== 0}>
+            <Box className={classes.imageContainer}>
+              {uploadImages.length !== 0
+                ? uploadImages.map((data, index) => {
+                    return (
+                      <ImageItemUpload
+                        key={index}
+                        img={data}
+                        raw={blobImgs[index]}
+                      />
+                    );
+                  })
+                : ""}
+            </Box>
+          </Collapse>
+          <Box className={classes.buttonContainer}>
+            <input
+              accept="image/*"
+              className={classes.inputImage}
+              id="contained-button-file"
+              multiple
+              type="file"
+              ref={inputImgRef}
+              onChange={handleImgChange}
+            />
+            <label htmlFor="contained-button-file">
+              <Button
+                component="span"
+                className={classes.button}
+                variant="contained"
+                disableElevation
+                disabled={loading}
+                startIcon={<ImageRoundedIcon />}
+              >
+                Add Image
+              </Button>
+            </label>
+
+            <Button
+              className={classes.button}
+              variant="contained"
+              disableElevation
+              disabled={err || loading}
+              startIcon={<PostAddIcon />}
+              onClick={e => {
+                e.preventDefault();
+                handleAdd();
+              }}
+            >
+              {loading ? <CircularProgress size={15} /> : "Post Moment"}
+            </Button>
+          </Box>
         </Box>
-      </Collapse>
-      <Box className={classes.buttonContainer}>
-        <input
-          accept="image/*"
-          className={classes.inputImage}
-          id="contained-button-file"
-          multiple
-          type="file"
-          ref={inputImgRef}
-          onChange={handleImgChange}
-        />
-        <label htmlFor="contained-button-file">
-          <Button
-            component="span"
-            className={classes.button}
-            variant="contained"
-            disableElevation
-            disabled={loading}
-            startIcon={<ImageRoundedIcon />}
-          >
-            Add Image
-          </Button>
-        </label>
+      </ModalComponent>
+    </>
+  );
+}
 
-        <Button
-          className={classes.button}
-          variant="contained"
-          disableElevation
-          disabled={err || loading}
-          startIcon={<PostAddIcon />}
-          onClick={e => {
-            e.preventDefault();
-            handleAdd();
-          }}
-        >
-          {loading ? <CircularProgress size={15} /> : "Post Moment"}
-        </Button>
-      </Box>
-    </Box>
+const useModalStyle = makeStyles(theme => ({
+  root: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: theme.spacing(1)
+  }
+}));
+
+function ModalComponent({ isOpen, handleOpen, handleClose, children }) {
+  const classes = useModalStyle();
+
+  return (
+    <Modal
+      aria-labelledby="transition-modal-title"
+      aria-describedby="transition-modal-description"
+      className={classes.root}
+      open={isOpen}
+      onClose={handleClose}
+      closeAfterTransition
+      BackdropComponent={Backdrop}
+      BackdropProps={{
+        timeout: 500
+      }}
+    >
+      <Fade in={isOpen}>{children}</Fade>
+    </Modal>
   );
 }
