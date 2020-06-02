@@ -204,6 +204,18 @@ export default function Form(props) {
   const handleImgChange = e => {
     //edit here to handle multiple selection images
     const file = inputImgRef.current.files[0];
+    const reader = new FileReader();
+    reader.addEventListener(
+      "load",
+      function() {
+        // convert image file to base64 string
+        console.log("result", reader.result);
+      },
+      false
+    );
+    reader.readAsDataURL(file);
+    //blob:http://localhost:3000/41730088-1c53-41d6-8b2e-56d1e4c82edc
+    console.log(reader.result);
     if (file) {
       const rawFile = e.target.files[0];
       const image = URL.createObjectURL(rawFile);

@@ -11,6 +11,7 @@ import {
 import style from "./assets/jss/theme";
 import PrivateRoute from "./components/PrivateRoute";
 import { getAuthState } from "./firebase";
+import RedRoseBouquet from "./components/pages/red-rose-bouquet";
 const history = createBrowserHistory();
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
     <ThemeProvider theme={appTheme}>
       <Router history={history}>
         <Switch>
+          <Route exact path="/red-rose-bouquet" component={RedRoseBouquet} />
           <Route path={ROUTES.LOGIN.path} component={ROUTES.LOGIN.component} />
           <PrivateRoute
             path={ROUTES.MAIN.path}
