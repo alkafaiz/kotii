@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import {
   Box,
@@ -61,39 +61,11 @@ const useStyle = makeStyles(style);
 export default function Main(props) {
   const classes = useStyle();
   const { cUser, cCouple } = props;
-  const [moments, loading] = firebase.useMoments(localStorage.getItem("id"));
-
-  //const [loading, setLoading] = useState(true);
-  const [didMount, setDidMount] = useState(false);
-
-  useEffect(() => {
-    setDidMount(true);
-  }, []);
-
-  useEffect(() => {
-    if (didMount) {
-      if (moments.length !== 0) {
-        //setLoading(false);
-      }
-    }
-  }, [moments, didMount]);
-
-  const GenerateMoments = () => {
-    return moments !== undefined
-      ? moments.map((data, index) => {
-          return (
-            <Moment
-              loading={false}
-              key={data.id}
-              data={data}
-              id={data.id}
-              couple={cCouple.couple}
-              cUserEmail={cUser.user.email}
-            />
-          );
-        })
-      : "";
-  };
+  const [pageNumber, setPageNumber] = useState(1);
+  const [moments, loading, hasMore] = firebase.useMoments(
+    localStorage.getItem("id"),
+    pageNumber
+  );
 
   const getPartnerName = () => {
     const currentUserEmail = cUser.user.email;
@@ -106,6 +78,21 @@ export default function Main(props) {
     });
     return name;
   };
+
+  const observer = useRef();
+  const lastMomentElementRef = useCallback(
+    node => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting && hasMore) {
+          setPageNumber(prevPageNumber => prevPageNumber + 1);
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore]
+  );
 
   return (
     <React.Fragment>
@@ -187,17 +174,34 @@ export default function Main(props) {
             </Typography>
           )}
         </Box>
-        {moments.length !== 0 ? (
-          GenerateMoments()
-        ) : loading ? (
-          <Moment loading={true} />
-        ) : (
+        {moments
+          ? moments.map((data, index) => {
+              return (
+                <div
+                  ref={
+                    moments.length === index + 1 ? lastMomentElementRef : null
+                  }
+                  key={data.id}
+                >
+                  <Moment
+                    loading={false}
+                    data={data}
+                    id={data.id}
+                    couple={cCouple.couple}
+                    cUserEmail={cUser.user.email}
+                  />
+                </div>
+              );
+            })
+          : null}
+        {!loading && moments.length === 0 ? (
           <Box my={4} textAlign="center">
             <Typography variant="subtitle1">
               You have not created a moment
             </Typography>
           </Box>
-        )}
+        ) : null}
+        {loading ? <Moment loading={true} /> : null}
       </Container>
     </React.Fragment>
   );
