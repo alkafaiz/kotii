@@ -155,32 +155,65 @@ export const getMoment = (id, cb = () => {}) => {
 };
 
 //custom hooks for collecting moments from firebase
-export function useMoments(id) {
+export function useMoments(id, pageNumber) {
   const [moments, setMoment] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lastElement, setLastElement] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     const unsubscribe = firebase
       .firestore()
       .collection("couple")
       .doc(id)
       .collection("moment")
       .orderBy("timestamp", "desc")
+      .limit(4)
       .onSnapshot(snapshot => {
         const newMoments = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
         setMoment(newMoments);
+        setLastElement(snapshot.docs[snapshot.docs.length - 1]);
         setLoading(false);
       });
     return () => {
       unsubscribe();
-      console.log("unsubscribe");
     };
   }, [id]);
 
-  return [moments, loading];
+  useEffect(() => {
+    if (pageNumber === 1 && hasMore) return;
+    setLoading(true);
+    const unsubscribe = firebase
+      .firestore()
+      .collection("couple")
+      .doc(id)
+      .collection("moment")
+      .orderBy("timestamp", "desc")
+      .limit(4)
+      .startAfter(lastElement)
+      .onSnapshot(snapshot => {
+        const newMoments = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        if (snapshot.empty) {
+          setHasMore(false);
+        } else {
+          setMoment(prev => [...prev, ...newMoments]);
+          setLastElement(snapshot.docs[snapshot.docs.length - 1]);
+        }
+        setLoading(false);
+      });
+    return () => {
+      unsubscribe();
+    };
+  }, [id, pageNumber]);
+
+  return [moments, loading, hasMore];
 }
 
 //testing create user
